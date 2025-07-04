@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signup</title>
+</head>
+
+<body>
+  <form id="signupForm">
+    <input type="email" id="signupEmail" required placeholder="Email" />
+    <input type="password" id="signupPassword" required placeholder="Password" />
+    <select id="signupRole">
+      <option value="provider">Provider</option>
+      <option value="physician">Physician Partner</option>
+    </select>
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <!-- Correct Firebase compat scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+
+  <!-- Your config file: adjust path correctly -->
+  <script src="/JS/firebase-config.js"></script>
+
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = signupEmail.value;
+      const password = signupPassword.value;
+      const role = signupRole.value;
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
+
+        await db.collection("users").doc(uid).set({
+          email,
+          role,
+          isApproved: false,
+          hospitalId: "",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Signup successful! Await admin approval.");
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  </script>
+</body>
+</html>

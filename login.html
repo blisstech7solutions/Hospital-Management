@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+</head>
+
+<body>
+  <form id="loginForm">
+    <input type="email" id="loginEmail" required placeholder="Email" />
+    <input type="password" id="loginPassword" required placeholder="Password" />
+    <button type="submit">Login</button>
+  </form>
+
+  <!-- Correct Firebase compat scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+
+  <!-- Correct config file path -->
+  <script src="/JS/firebase-config.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginForm = document.getElementById("loginForm");
+      const loginEmail = document.getElementById("loginEmail");
+      const loginPassword = document.getElementById("loginPassword");
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        try {
+          const userCred = await auth.signInWithEmailAndPassword(loginEmail.value, loginPassword.value);
+          const uid = userCred.user.uid;
+          const userRef = await db.collection("users").doc(uid).get();
+
+          if (!userRef.exists || !userRef.data().isApproved) {
+            alert("Your account is not approved yet.");
+            return;
+          }
+
+          const role = userRef.data().role;
+          if (role === "provider") window.location.href = "provider-dashboard.html";
+          else if (role === "physician") window.location.href = "physician-dashboard.html";
+          else if (userCred.user.email === "vaibhavmalbhage@gmail.com") window.location.href = "admin-dashboard.html";
+          else alert("Role not recognized!");
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prescription</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    table input, table select { width: 100%; }
+    .section { margin-bottom: 20px; }
+  </style>
+</head>
+<body class="container py-4">
+  <h2 class="mb-4">Create Prescription</h2>
+
+  <!-- PRN Lookup -->
+  <div class="section">
+    <label for="prnInput">Enter Patient PRN (mobile_name):</label>
+    <input type="text" id="prnInput" class="form-control mb-2" placeholder="Example: 9876543210_Ravi" />
+    <button class="btn btn-secondary" onclick="loadLastPrescription()">Load Last Prescription</button>
+  </div>
+
+  <!-- Diagnosis -->
+  <form id="prescriptionForm">
+    <div class="section">
+      <label>Disease</label>
+      <input type="text" id="disease" class="form-control" required />
+
+      <div class="row mt-2">
+        <div class="col"><input class="form-control" id="bp" placeholder="BP (e.g. 120/80)" /></div>
+        <div class="col"><input class="form-control" id="sugar" placeholder="Sugar (mg/dL)" /></div>
+        <div class="col"><input class="form-control" id="pulse" placeholder="Pulse (bpm)" /></div>
+        <div class="col"><input class="form-control" id="temp" placeholder="Temperature (°F)" /></div>
+      </div>
+    </div>
+
+    <!-- Medicines -->
+    <div class="section">
+      <label>Medicines</label>
+      <table class="table table-bordered" id="medTable">
+        <thead>
+          <tr>
+            <th>Type</th><th>Name</th><th>Dosage</th><th>Time (M/A/N)</th><th>Before Food</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button type="button" class="btn btn-outline-primary" onclick="addRow()">+ Add Medicine</button>
+    </div>
+
+    <!-- Submit -->
+    <div class="section">
+      <button type="submit" class="btn btn-success">Save Prescription</button>
+    </div>
+  </form>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    let currentUser = null;
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+      } else {
+        alert("Please login first");
+        window.location.href = "login.html";
+      }
+    });
+
+    // Add new row
+    function addRow(data = {}) {
+      const tbody = document.querySelector('#medTable tbody');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>
+          <select class="form-select">${["Tablet", "Syrup", "Cream", "Injection"].map(t =>
+            `<option ${data.type === t ? "selected" : ""}>${t}</option>`
+          ).join('')}</select>
+        </td>
+        <td><input type="text" class="form-control" value="${data.name || ''}"></td>
+        <td><input type="text" class="form-control" value="${data.dosage || ''}"></td>
+        <td><input type="text" class="form-control" value="${data.time || ''}"></td>
+        <td class="text-center"><input type="checkbox" ${data.beforeFood ? "checked" : ""}></td>
+        <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">🗑</button></td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    // Form submit handler
+    document.getElementById('prescriptionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const prn = document.getElementById('prnInput').value.trim();
+      if (!prn) return alert("Please enter PRN");
+
+      const meds = [];
+      document.querySelectorAll('#medTable tbody tr').forEach(tr => {
+        const cells = tr.querySelectorAll('td');
+        meds.push({
+          type: cells[0].querySelector('select').value,
+          name: cells[1].querySelector('input').value,
+          dosage: cells[2].querySelector('input').value,
+          time: cells[3].querySelector('input').value,
+          beforeFood: cells[4].querySelector('input').checked
+        });
+      });
+
+      await db.collection("prescriptions").add({
+        prn,
+        providerId: currentUser.uid,
+        disease: disease.value,
+        bp: bp.value,
+        sugar: sugar.value,
+        pulse: pulse.value,
+        temp: temp.value,
+        medicines: meds,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      alert("Prescription saved!");
+      document.getElementById('prescriptionForm').reset();
+      document.querySelector('#medTable tbody').innerHTML = "";
+      addRow();
+    });
+
+    // Load last prescription
+    async function loadLastPrescription() {
+      const prn = document.getElementById("prnInput").value.trim();
+      if (!prn) return alert("Enter PRN first.");
+
+      const snap = await db.collection("prescriptions")
+        .where("prn", "==", prn)
+        .orderBy("createdAt", "desc")
+        .limit(1)
+        .get();
+
+      if (snap.empty) {
+        alert("No previous prescription found.");
+        return;
+      }
+
+      const data = snap.docs[0].data();
+      document.getElementById("disease").value = data.disease || '';
+      document.getElementById("bp").value = data.bp || '';
+      document.getElementById("sugar").value = data.sugar || '';
+      document.getElementById("pulse").value = data.pulse || '';
+      document.getElementById("temp").value = data.temp || '';
+      document.querySelector('#medTable tbody').innerHTML = "";
+      data.medicines.forEach(addRow);
+    }
+
+    // Add one row by default
+    window.onload = () => addRow();
+  </script>
+</body>
+</html>

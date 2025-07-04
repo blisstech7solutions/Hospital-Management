@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+</head>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js"></script>
+<script src="js/firebase-config.js"></script>
+
+<body>
+    <form id="hospitalForm">
+        <input type="text" placeholder="Hospital Name" id="name" required />
+        <input type="text" placeholder="Address" id="address" required />
+        <input type="email" placeholder="Partner Email" id="partnerEmail" required />
+        <button type="submit">Save</button>
+      </form>
+      
+      <script>
+        hospitalForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const user = auth.currentUser;
+          const hospital = {
+            name: name.value,
+            address: address.value,
+            partnerEmail: partnerEmail.value,
+            createdBy: user.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          const docRef = await db.collection("hospitals").add(hospital);
+          await db.collection("users").doc(user.uid).update({ hospitalId: docRef.id });
+          alert("Hospital Profile Created!");
+        });
+      </script>
+      
+</body>
+</html>

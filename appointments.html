@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Appointments</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+</head>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js"></script>
+
+<body>
+  <h2>Appointments</h2>
+
+  <form id="addAppointmentForm">
+    <input type="text" id="patientName" placeholder="Patient Name" required />
+    <input type="tel" id="patientMobile" placeholder="Mobile" required />
+    <input type="datetime-local" id="appointmentTime" required />
+    <label><input type="checkbox" id="feesPaid"> Fees Paid</label>
+    <button type="submit">Add Appointment</button>
+  </form>
+
+  <table id="appointmentsTable" class="display">
+    <thead>
+      <tr>
+        <th>PRN</th>
+        <th>Name</th>
+        <th>Mobile</th>
+        <th>Time</th>
+        <th>Paid</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="js/firebase-config.js"></script>
+  <script>
+    const user = firebase.auth().currentUser;
+    const table = $('#appointmentsTable').DataTable();
+
+    function prnKey(name, mobile) {
+      return mobile + "_" + name.replace(/\s+/g, '');
+    }
+
+    const loadAppointments = async () => {
+      const snapshot = await db.collection('appointments').where('userId', '==', user.uid).get();
+      table.clear();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        table.row.add([
+          data.prn,
+          data.name,
+          data.mobile,
+          new Date(data.time).toLocaleString(),
+          data.feesPaid ? '✅' : '❌',
+          `<button onclick="deleteAppointment('${doc.id}')">Delete</button>`
+        ]);
+      });
+      table.draw();
+    };
+
+    $("#addAppointmentForm").submit(async e => {
+      e.preventDefault();
+      const name = patientName.value;
+      const mobile = patientMobile.value;
+      const time = appointmentTime.value;
+      const prn = prnKey(name, mobile);
+      await db.collection('appointments').add({
+        name, mobile, prn, time, feesPaid: feesPaid.checked, userId: user.uid
+      });
+      loadAppointments();
+      e.target.reset();
+    });
+
+    async function deleteAppointment(id) {
+      await db.collection('appointments').doc(id).delete();
+      loadAppointments();
+    }
+
+    firebase.auth().onAuthStateChanged(u => {
+      if (u) {
+        user = u;
+        loadAppointments();
+      }
+    });
+  </script>
+</body>
+</html>
