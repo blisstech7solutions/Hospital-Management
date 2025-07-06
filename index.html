@@ -1,37 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ClinicFlow – Smart Hospital Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+    }
+    .hero {
+      background: linear-gradient(to right, #43cea2, #185a9d);
+      color: white;
+      padding: 90px 20px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: bold;
+    }
+    .hero .btn {
+      margin-top: 20px;
+    }
+    .slider {
+      margin: 60px auto;
+      max-width: 900px;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .slider img {
+      width: 100%;
+      animation: fade 1s ease-in-out;
+    }
+    @keyframes fade {
+      from {opacity: 0.4;}
+      to {opacity: 1;}
+    }
+    .section-title {
+      text-align: center;
+      margin: 50px 0 30px;
+    }
+    .roles-section .card {
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+    }
+    .roles-section .card:hover {
+      transform: translateY(-5px);
+    }
+    .offer-section {
+      background: linear-gradient(145deg, #e0f7fa, #ffffff);
+      padding: 60px 20px;
+      text-align: center;
+      border-top: 5px solid #00c853;
+      border-bottom: 5px solid #00c853;
+    }
+    .offer-badge {
+      font-size: 1.3rem;
+      background: #00c853;
+      color: white;
+      padding: 8px 20px;
+      border-radius: 50px;
+      display: inline-block;
+      animation: bounce 1.5s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .emoji {
+      font-size: 2.5rem;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    footer {
+      background: #185a9d;
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+    }
+  </style>
 </head>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js"></script>
-<script src="js/firebase-config.js"></script>
-
 <body>
-    <form id="contactForm">
-        <input type="text" placeholder="Name" id="contactName" required />
-        <input type="email" placeholder="Email" id="contactEmail" required />
-        <textarea id="contactMessage" placeholder="Your message..."></textarea>
-        <button type="submit">Send</button>
-      </form>
-      
-      <script>
-        contactForm.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          await db.collection("contactMessages").add({
-            name: contactName.value,
-            email: contactEmail.value,
-            message: contactMessage.value,
-            read: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          alert("Message sent successfully!");
-        });
-      </script>
-      
+
+  <!-- Hero Section -->
+  <div class="hero animate__animated animate__fadeIn">
+    <h1>🏥 Welcome to ClinicFlow</h1>
+    <p class="lead">Streamlining hospital operations for providers, partners & patients.</p>
+    <button class="btn btn-light btn-lg" onclick="location.href='login.html'">Login / Signup</button>
+  </div>
+
+  <!-- Screenshot Slider -->
+  <div class="slider mt-5">
+    <img id="sliderImage" src="" alt="Screenshot 1" />
+  </div>
+
+  <!-- Role-based Features -->
+  <div class="container roles-section py-5">
+    <h2 class="section-title">🔍 Role-wise Features</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>👨‍⚕️ Provider (Doctor)</h4>
+          <ul class="mt-3 text-start">
+            <li>Manage hospital profile</li>
+            <li>View & print prescriptions 🖨️</li>
+            <li>Auto-sync appointments with partners</li>
+            <li>Load latest patient visits & history</li>
+            <li>Real-time chat and patient tracking</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-4">
+          <h4>🤝 Physician Partner</h4>
+          <ul class="mt-3 text-start">
+            <li>Schedule & manage appointments</li>
+            <li>Load last prescription in one click</li>
+            <li>Prepare data for provider review</li>
+            <li>Collaborate with doctors seamlessly</li>
+            <li>Assist in generating new prescriptions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription Offer Section -->
+  <div class="offer-section">
+    <div class="emoji">🎉</div>
+    <h2 class="mt-3">Limited Time Offer</h2>
+    <p class="lead">Take full advantage of ClinicFlow with our <strong>Annual Plan</strong></p>
+    <div class="offer-badge mt-2">Only ₹10,000/year</div>
+    <p class="mt-3">Save big compared to ₹1000/month – includes full access to appointments, prescription printing, sync features, and more!</p>
+    <button class="btn btn-success btn-lg mt-3" onclick="location.href='login.html'">Start Now</button>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 ClinicFlow by Bliss Tech 7 Solutions | All rights reserved</p>
+  </footer>
+
+  <!-- Screenshot Slider Script -->
+  <script>
+    const images = [
+      "/chat.js.png",
+      "screenshots/2.png",
+      "screenshots/3.png",
+      "screenshots/4.png"
+    ];
+    let index = 0;
+    const img = document.getElementById("sliderImage");
+    setInterval(() => {
+      index = (index + 1) % images.length;
+      img.src = images[index];
+    }, 2500);
+  </script>
+
 </body>
 </html>
