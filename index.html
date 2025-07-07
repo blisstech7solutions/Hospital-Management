@@ -10,6 +10,8 @@
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f0f4f8;
+        padding-bottom: 60px; /* Same or more than footer height */
+
     }
 
     .hero {
@@ -168,12 +170,19 @@
       100% { transform: scale(1); }
     }
 
-    footer {
-      background: #185a9d;
-      color: white;
-      padding: 10px 0;
-      text-align: center;
-    }
+   footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #185a9d;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
   </style>
 </head>
 <body>
