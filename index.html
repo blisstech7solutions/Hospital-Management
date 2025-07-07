@@ -11,46 +11,129 @@
       font-family: 'Segoe UI', sans-serif;
       background: #f0f4f8;
     }
+
     .hero {
       background: linear-gradient(to right, #43cea2, #185a9d);
       color: white;
       padding: 90px 20px;
       text-align: center;
     }
+
     .hero h1 {
       font-size: 3.2rem;
       font-weight: bold;
     }
+
     .hero .btn {
       margin-top: 20px;
     }
-    .slider {
-      margin: 60px auto;
-      max-width: 900px;
+
+    /* Medium-sized Slider */
+    .screenshot-slider {
+      padding: 50px 0;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .slider-medium-wrapper {
+      position: relative;
+      width: 600px;
+      height: 370px;
       overflow: hidden;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      margin: auto;
     }
-    .slider img {
+
+    .slider-medium {
+      display: flex;
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .slider-item {
+      flex-shrink: 0;
+      width: 600px;
+      text-align: center;
+    }
+
+    .slider-item img {
       width: 100%;
-      animation: fade 1s ease-in-out;
+      height: 320px;
+      object-fit: cover;
+      border-radius: 15px 15px 0 0;
+      animation: fadeInScale 0.6s ease-in-out;
     }
-    @keyframes fade {
-      from {opacity: 0.4;}
-      to {opacity: 1;}
+
+    .slider-caption {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 0 0 15px 15px;
+      font-size: 1rem;
+      font-weight: 500;
     }
+
+    @keyframes fadeInScale {
+      from { opacity: 0.5; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 1.8rem;
+  padding: 8px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.3s;
+}
+
+.nav:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.prev {
+  left: 10px;
+}
+
+.next {
+  right: 10px;
+}
+
+
+    @media (max-width: 640px) {
+      .slider-medium-wrapper,
+      .slider-item {
+        width: 90%;
+      }
+      .slider-item img {
+        height: auto;
+      }
+      .prev, .next {
+        top: 90%;
+        transform: none;
+      }
+    }
+
     .section-title {
       text-align: center;
       margin: 50px 0 30px;
     }
+
     .roles-section .card {
       border: none;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
       transition: all 0.3s ease;
     }
+
     .roles-section .card:hover {
       transform: translateY(-5px);
     }
+
     .offer-section {
       background: linear-gradient(145deg, #e0f7fa, #ffffff);
       padding: 60px 20px;
@@ -58,6 +141,7 @@
       border-top: 5px solid #00c853;
       border-bottom: 5px solid #00c853;
     }
+
     .offer-badge {
       font-size: 1.3rem;
       background: #00c853;
@@ -67,19 +151,23 @@
       display: inline-block;
       animation: bounce 1.5s infinite;
     }
+
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
     }
+
     .emoji {
       font-size: 2.5rem;
       animation: pulse 2s infinite;
     }
+
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.15); }
       100% { transform: scale(1); }
     }
+
     footer {
       background: #185a9d;
       color: white;
@@ -97,10 +185,44 @@
     <button class="btn btn-light btn-lg" onclick="location.href='login.html'">Login / Signup</button>
   </div>
 
-  <!-- Screenshot Slider -->
-  <div class="slider mt-5">
-    <img id="sliderImage" src="" alt="Screenshot 1" />
-  </div>
+  <!-- Screenshot Medium-sized Slider -->
+  <section class="screenshot-slider">
+    <!-- <h2 class="mb-4">📸 Screenshots Preview</h2> -->
+    <div class="slider-medium-wrapper" id="sliderWrapper">
+      <div class="slider-medium" id="slider">
+        <div class="slider-item">
+          <img src="/Signup.png" alt="Signup Screenshot" />
+          <div class="slider-caption">User Signup Page</div>
+        </div>
+        <div class="slider-item">
+          <img src="/Login.png" alt="Login Screenshot" />
+          <div class="slider-caption">Secure Login Interface</div>
+        </div>
+        <div class="slider-item">
+          <img src="/phypartner.png" alt="Partner Dashboard" />
+          <div class="slider-caption">Physician Partner Dashboard</div>
+        </div>
+         <div class="slider-item">
+          <img src="/Providerdash.png" alt="Provider Screenshot" />
+          <div class="slider-caption">Provider Dashboard </div>
+        </div>
+         <div class="slider-item">
+          <img src="/Addappt.png" alt="Add Appt Screenshot" />
+          <div class="slider-caption">Add Appt Interface</div>
+        </div>
+         <div class="slider-item">
+          <img src="/pres.png" alt="Login Screenshot" />
+          <div class="slider-caption">prescription Interface</div>
+        </div>
+         <div class="slider-item">
+          <img src="/chat.png" alt="Login Screenshot" />
+          <div class="slider-caption">Chat Interface</div>
+        </div>
+      </div>
+      <button class="nav prev" onclick="prevSlide()">❮</button>
+      <button class="nav next" onclick="nextSlide()">❯</button>
+    </div>
+  </section>
 
   <!-- Role-based Features -->
   <div class="container roles-section py-5">
@@ -148,20 +270,31 @@
     <p>&copy; 2025 ClinicFlow by Bliss Tech 7 Solutions | All rights reserved</p>
   </footer>
 
-  <!-- Screenshot Slider Script -->
+  <!-- Slider Script -->
   <script>
-    const images = [
-      "/chat.js.png",
-      "screenshots/2.png",
-      "screenshots/3.png",
-      "screenshots/4.png"
-    ];
-    let index = 0;
-    const img = document.getElementById("sliderImage");
+    let currentIndex = 0;
+    const slider = document.getElementById("slider");
+    const totalItems = slider.children.length;
+
+    function showSlide(index) {
+      if (index >= totalItems) currentIndex = 0;
+      else if (index < 0) currentIndex = totalItems - 1;
+      else currentIndex = index;
+
+      slider.style.transform = `translateX(-${currentIndex * 600}px)`;
+    }
+
+    function nextSlide() {
+      showSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+      showSlide(currentIndex - 1);
+    }
+
     setInterval(() => {
-      index = (index + 1) % images.length;
-      img.src = images[index];
-    }, 2500);
+      nextSlide();
+    }, 4000);
   </script>
 
 </body>
