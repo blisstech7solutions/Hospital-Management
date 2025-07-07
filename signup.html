@@ -2,54 +2,364 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Signup</title>
-</head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signup - HMS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #2e86de;
+      --primary-dark: #1b4f72;
+      --light-bg: #ffffff;
+      --dark-bg: #121212;
+      --dark-card: #1f1f1f;
+      --light-text: #333;
+      --dark-text: #f1f1f1;
+    }
 
-<body>
-  <form id="signupForm">
-    <input type="email" id="signupEmail" required placeholder="Email" />
-    <input type="password" id="signupPassword" required placeholder="Password" />
-    <select id="signupRole">
-      <option value="provider">Provider</option>
-      <option value="physician">Physician Partner</option>
-    </select>
-    <button type="submit">Sign Up</button>
-  </form>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Nunito', sans-serif;
+    }
 
-  <!-- Correct Firebase compat scripts -->
+    body {
+      background: var(--light-bg);
+      color: var(--light-text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      transition: 0.3s ease;
+    }
+
+    body.dark-mode {
+      background: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    .container {
+      background: var(--light-bg);
+      color: var(--light-text);
+      width: 100%;
+      max-width: 420px;
+      padding: 30px 25px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    body.dark-mode .container {
+      background: var(--dark-card);
+      color: var(--dark-text);
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .emoji-banner {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 15px;
+      animation: pulse 2s infinite;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+      margin: 8px 0 5px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 12px;
+      font-size: 15px;
+      background-color: #fff;
+      transition: 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    body.dark-mode input,
+    body.dark-mode select {
+      background: #333;
+      color: #f1f1f1;
+      border-color: #555;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    #toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      margin-top: 5px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    #toggle-theme {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    p {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    p a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    p a:hover {
+      text-decoration: underline;
+    }
+
+    small {
+      color: #777;
+      font-size: 12px;
+    }
+
+    body.dark-mode small {
+      color: #aaa;
+    }
+
+    #loader {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #666;
+    }
+
+    body.dark-mode #loader {
+      color: #ccc;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @media screen and (max-width: 480px) {
+      .container {
+        padding: 20px 15px;
+        border-radius: 10px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      input, select, button {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      #toggle-password {
+        top: 10px;
+        font-size: 16px;
+      }
+
+      #toggle-theme {
+        font-size: 16px;
+      }
+    }
+  </style>
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
-
-  <!-- Your config file: adjust path correctly -->
-  <script src="/JS/firebase-config.js"></script>
 
   <script>
-    document.getElementById("signupForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = signupEmail.value;
-      const password = signupPassword.value;
-      const role = signupRole.value;
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
+      authDomain: "hospital-management-syst-580a4.firebaseapp.com",
+      projectId: "hospital-management-syst-580a4",
+      storageBucket: "hospital-management-syst-580a4.appspot.com",
+      messagingSenderId: "318105236795",
+      appId: "1:318105236795:web:548c0e174553eeed67f31e"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  </script>
 
-      try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const uid = userCredential.user.uid;
+  <script defer>
+    document.addEventListener("DOMContentLoaded", () => {
+      const auth = firebase.auth();
+      const db = firebase.firestore();
 
-        await db.collection("users").doc(uid).set({
-          email,
-          role,
-          isApproved: false,
-          hospitalId: "",
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+      const form = document.getElementById("signup-form");
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const role = document.getElementById("role");
+      const providerEmailSection = document.getElementById("provider-email-section");
+      const providerEmailInput = document.getElementById("providerEmail");
+      const togglePassword = document.getElementById("toggle-password");
+      const toggleTheme = document.getElementById("toggle-theme");
+      const loader = document.getElementById("loader");
+      const submitBtn = form.querySelector("button[type=submit]");
 
-        alert("Signup successful! Await admin approval.");
-      } catch (err) {
-        alert(err.message);
+      // Load dark mode preference
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.body.classList.add("dark-mode");
+        toggleTheme.textContent = "☀️";
+      } else {
+        toggleTheme.textContent = "🌙";
       }
+
+      toggleTheme.onclick = () => {
+        document.body.classList.toggle("dark-mode");
+        const isDark = document.body.classList.contains("dark-mode");
+        toggleTheme.textContent = isDark ? "☀️" : "🌙";
+        localStorage.setItem("dark-mode", isDark);
+      };
+
+      togglePassword.onclick = () => {
+        if (password.type === "password") {
+          password.type = "text";
+          togglePassword.textContent = "🙈";
+        } else {
+          password.type = "password";
+          togglePassword.textContent = "👁";
+        }
+      };
+
+      role.addEventListener("change", () => {
+        providerEmailSection.style.display = role.value === "physician" ? "block" : "none";
+        if (role.value !== "physician") providerEmailInput.value = "";
+      });
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+
+        if (!role.value) return alert("Please select a role.");
+        if (password.value.length < 6) return alert("Password must be at least 6 characters long.");
+
+        loader.style.display = "block";
+        submitBtn.disabled = true;
+
+        try {
+          const userCredential = await auth.createUserWithEmailAndPassword(email.value.trim(), password.value);
+          const uid = userCredential.user.uid;
+
+          let userData = {
+            email: email.value.trim(),
+            role: role.value,
+            isApproved: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          };
+
+          if (role.value === "physician") {
+            const providerEmail = providerEmailInput.value.trim();
+            if (!providerEmail) throw new Error("Please enter the provider's email.");
+
+            const providerSnap = await db.collection("users")
+              .where("email", "==", providerEmail)
+              .where("role", "==", "provider")
+              .limit(1).get();
+
+            if (providerSnap.empty) throw new Error("No registered provider found with that email.");
+
+            const providerUID = providerSnap.docs[0].id;
+            userData.linkedProviderEmail = providerEmail;
+            userData.linkedProviderUID = providerUID;
+            userData.appointmentsEmail = providerEmail;
+          } else {
+            userData.appointmentsEmail = email.value.trim();
+          }
+
+          await db.collection("users").doc(uid).set(userData);
+
+          alert("Signup successful! Awaiting admin approval.");
+          form.reset();
+          providerEmailSection.style.display = "none";
+        } catch (err) {
+          alert("Error: " + err.message);
+        } finally {
+          loader.style.display = "none";
+          submitBtn.disabled = false;
+        }
+      };
     });
   </script>
+</head>
+<body>
+  <div class="container">
+    <div id="toggle-theme" title="Toggle theme" role="button" tabindex="0">🌙</div>
+    <div class="emoji-banner">🏥 Create Your HMS Account</div>
+    <h2>Sign Up</h2>
+    <form id="signup-form">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="📧 Your email" required />
+
+      <label for="password">Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="🔐 Password" required />
+        <span id="toggle-password">👁</span>
+      </div>
+      <small>Minimum 6 characters</small>
+
+      <label for="role">Select Role</label>
+      <select id="role" required>
+        <option value="" disabled selected>Select Role</option>
+        <option value="provider">Provider</option>
+        <option value="physician">Physician Partner</option>
+      </select>
+
+      <div id="provider-email-section" style="display: none;">
+        <label for="providerEmail">Join With Provider Email</label>
+        <input type="email" id="providerEmail" placeholder="Enter Provider's Email" />
+        <small>Ask your provider for their registered email.</small>
+      </div>
+
+      <div id="loader">⏳ Please wait...</div>
+      <button type="submit">Sign Up 🚀</button>
+
+      <p>Already have an account? <a href="login.html">Login</a></p>
+    </form>
+  </div>
+  <!-- try.anand.devarshe92@gmail.com
+  anand.devarshe92@gmail.com -->
 </body>
 </html>

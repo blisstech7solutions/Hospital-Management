@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == "vaibhavmalbhage@gmail.com";
+    }
+
+    // USERS: Allow users to access their own doc, and allow listing for logged in
+    match /users/{userId} {
+      allow read, write: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow list: if request.auth != null;
+    }
+
+    // HOSPITALS: Allow read for logged in, write for admin or owner
+    match /hospitals/{hospitalId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || (
+        request.auth != null &&
+        (!exists(resource.data) || resource.data.createdBy == request.auth.uid || request.resource.data.createdBy == request.auth.uid)
+      );
+
+      // APPOINTMENTS subcollection under hospital
+      match /appointments/{appointmentId} {
+        allow read: if request.auth != null && (
+          isAdmin()
+          || resource.data.providerId == request.auth.uid
+          || resource.data.physicianPartnerId == request.auth.uid
+        );
+
+        allow create: if request.auth != null && (
+          isAdmin()
+          || request.resource.data.physicianPartnerId == request.auth.uid
+          || request.resource.data.providerId == request.auth.uid
+        );
+
+        allow update: if request.auth != null && (
+          isAdmin()
+          || resource.data.physicianPartnerId == request.auth.uid
+          || resource.data.providerId == request.auth.uid
+        );
+
+        allow delete: if request.auth != null && (
+          isAdmin()
+          || resource.data.physicianPartnerId == request.auth.uid
+          || resource.data.providerId == request.auth.uid
+        );
+      }
+    }
+
+    // CONTACT MESSAGES: Only admin can read/write
+    match /contactMessages/{msgId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ADMIN CHATS: Admin or provider (by UID) can read/write
+    match /adminChats/{providerId}/messages/{msgId} {
+      allow read, write: if isAdmin() || (request.auth != null && request.auth.uid == providerId);
+    }
+
+    // DEFAULT: Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+
+
+
+Error loading appointments: The query requires an index. You can create it here: 
+https://console.firebase.google.com/v1/r/project/hospital-management-syst-580a4/firestore/indexes?create_composite=CmNwcm9qZWN0cy9ob3NwaXRhbC1tYW5hZ2VtZW50LXN5c3QtN
+TgwYTQvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZ
+WN0aW9uR3JvdXBzL2FwcG9pbn
+RtZW50cy9pbmRleGVzL18QARoXChNsaW5rZWRQcm92aWRlckVtYWls
+EAEACAOEZGFOZRACGgwKCF9fbm
+FtZV9fEAI
+
+
+https://console.firebase.google.com/v1/r/project/hospital-management-syst-580a4/firestore/indexes?create_composite=Cm5wcm9qZWN0cy9ob3NwaXRhbC1tYW5hZ2VtZW50LXN5c3QtNTgwYTQvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL2FwcG9pbnRtZW50cy9pbmRleGVzLONJQOFnSmltMTRBSxABGhcKE2xpbmtlZFByb3ZpZGVYRW1haWwQAROICgRkYXRIEAIaDAoIX19uYW1IX18QAg

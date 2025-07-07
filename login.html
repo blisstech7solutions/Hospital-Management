@@ -2,53 +2,305 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - HMS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+  --primary: #4caf50;
+  --background: #f9f9f9;
+  --text: #333;
+  --dark-bg: #1e1e1e;
+  --dark-text: #eee;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Nunito', sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.4s ease;
+  padding: 20px;
+}
+
+.dark-mode {
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+.container {
+  background: white;
+  padding: 30px 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  position: relative;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.dark-mode .container {
+  background: #2c2c2c;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+#toggle-theme {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input {
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.dark-mode input {
+  background: #444;
+  color: #fff;
+  border: 1px solid #777;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+button {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--primary);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #43a047;
+}
+
+#toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 12px;
+  cursor: pointer;
+}
+
+#loader {
+  font-size: 14px;
+  color: #888;
+}
+
+.emoji-banner {
+  font-size: 26px;
+  margin-bottom: 12px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+p {
+  font-size: 14px;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.dark-mode a {
+  color: #81c784;
+}
+
+/* Mobile responsiveness */
+@media screen and (max-width: 480px) {
+  .container {
+    padding: 25px 15px;
+    border-radius: 16px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .emoji-banner {
+    font-size: 22px;
+  }
+
+  input,
+  button {
+    font-size: 15px;
+    padding: 10px 12px;
+  }
+
+  #toggle-password {
+    top: 10px;
+    font-size: 14px;
+  }
+
+  #toggle-theme {
+    font-size: 18px;
+  }
+}
+  
+  </style>
 </head>
-
 <body>
-  <form id="loginForm">
-    <input type="email" id="loginEmail" required placeholder="Email" />
-    <input type="password" id="loginPassword" required placeholder="Password" />
-    <button type="submit">Login</button>
-  </form>
+  <div class="container">
+    <div id="toggle-theme" role="button" aria-label="Toggle dark/light mode">🌙</div>
+    <div class="emoji-banner">🏥🩺 Login to HMS</div>
+    <h2>Welcome Back</h2>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="📧 Email" required />
+      <div style="position:relative;">
+        <input type="password" id="password" placeholder="🔐 Password" required />
+        <span id="toggle-password">👁</span>
+      </div>
+      <div id="loader" style="display:none;">⏳ Please wait...</div>
+      <button type="submit">Login 🚀</button>
+      <button type="button" id="forgot-btn">Forgot Password 🔁</button>
+      <p>Don't have an account? <a href="signup.html">Sign Up 📝</a></p>
+    </form>
+  </div>
 
-  <!-- Correct Firebase compat scripts -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
-
-  <!-- Correct config file path -->
-  <script src="/JS/firebase-config.js"></script>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
+      authDomain: "hospital-management-syst-580a4.firebaseapp.com",
+      projectId: "hospital-management-syst-580a4",
+      storageBucket: "hospital-management-syst-580a4.appspot.com",
+      messagingSenderId: "318105236795",
+      appId: "1:318105236795:web:548c0e174553eeed67f31e"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     document.addEventListener("DOMContentLoaded", () => {
-      const loginForm = document.getElementById("loginForm");
-      const loginEmail = document.getElementById("loginEmail");
-      const loginPassword = document.getElementById("loginPassword");
+      const form = document.getElementById("login-form");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const togglePassword = document.getElementById("toggle-password");
+      const toggleTheme = document.getElementById("toggle-theme");
+      const loader = document.getElementById("loader");
 
-      loginForm.addEventListener("submit", async (e) => {
+      // Dark mode setup
+      if (localStorage.getItem("dark-mode") === "true") {
+        document.body.classList.add("dark-mode");
+        toggleTheme.textContent = "☀️";
+      } else {
+        toggleTheme.textContent = "🌙";
+      }
+
+      toggleTheme.onclick = () => {
+        document.body.classList.toggle("dark-mode");
+        const isDark = document.body.classList.contains("dark-mode");
+        toggleTheme.textContent = isDark ? "☀️" : "🌙";
+        localStorage.setItem("dark-mode", isDark);
+      };
+
+      togglePassword.onclick = () => {
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          togglePassword.textContent = "🙈";
+        } else {
+          passwordInput.type = "password";
+          togglePassword.textContent = "👁";
+        }
+      };
+
+      form.onsubmit = async (e) => {
         e.preventDefault();
+        loader.style.display = "block";
         try {
-          const userCred = await auth.signInWithEmailAndPassword(loginEmail.value, loginPassword.value);
-          const uid = userCred.user.uid;
-          const userRef = await db.collection("users").doc(uid).get();
+          const email = emailInput.value.trim().toLowerCase();
+          const password = passwordInput.value;
+          const userCredential = await auth.signInWithEmailAndPassword(email, password);
+          const uid = userCredential.user.uid;
 
-          if (!userRef.exists || !userRef.data().isApproved) {
+          if (email === "vaibhavmalbhage@gmail.com") {
+            window.location.href = "admin-dashboard.html";
+            return;
+          }
+
+          const doc = await db.collection("users").doc(uid).get();
+          if (!doc.exists) return alert("User data not found.");
+
+          const userData = doc.data();
+          if (!userData.isApproved) {
             alert("Your account is not approved yet.");
             return;
           }
 
-          const role = userRef.data().role;
-          if (role === "provider") window.location.href = "provider-dashboard.html";
-          else if (role === "physician") window.location.href = "physician-dashboard.html";
-          else if (userCred.user.email === "vaibhavmalbhage@gmail.com") window.location.href = "admin-dashboard.html";
-          else alert("Role not recognized!");
-        } catch (err) {
-          alert(err.message);
+          if (userData.role === "provider") {
+            window.location.href = "provider-dashboard.html";
+          } else if (userData.role === "physician") {
+            window.location.href = "physician-dashboard.html";
+          } else {
+            alert("Unknown role. Contact admin.");
+          }
+
+        } catch (error) {
+          alert("Error: " + error.message);
+        } finally {
+          loader.style.display = "none";
         }
-      });
+      };
+
+      document.getElementById("forgot-btn").onclick = async () => {
+        if (!emailInput.value) return alert("Enter your email to reset password.");
+        try {
+          await auth.sendPasswordResetEmail(emailInput.value.trim());
+          alert("Password reset email sent.");
+        } catch (err) {
+          alert("Error: " + err.message);
+        }
+      };
     });
   </script>
 </body>

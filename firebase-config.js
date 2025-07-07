@@ -1,3 +1,4 @@
+// Firebase Configuration and Global Setup
 const firebaseConfig = {
   apiKey: "AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
   authDomain: "hospital-management-syst-580a4.firebaseapp.com",
@@ -8,10 +9,7 @@ const firebaseConfig = {
   measurementId: "G-PMTJN7H06T"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+firebase.initializeApp(firebaseConfig);
+// const auth = firebase.auth();
+// const db = firebase.firestore();
+// const storage = firebase.storage();

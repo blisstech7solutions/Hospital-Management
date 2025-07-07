@@ -1,19 +1,142 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Physician Partner Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+   body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+h2 {
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 1.5rem;
+}
+
+#addNewBtn {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  border: none;
+  color: white;
+  font-weight: bold;
+  transition: transform 0.2s ease-in-out;
+  float: right;
+}
+
+#addNewBtn:hover {
+  transform: scale(1.05);
+}
+
+.btn-group {
+  margin-bottom: 1rem;
+}
+
+.table {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+}
+
+.table th {
+  background-color: #007bff;
+  color: white;
+  font-weight: 500;
+  text-align: center;
+}
+
+.table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.badge-pending {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.badge-completed {
+  background-color: #28a745;
+}
+
+.badge-cancelled {
+  background-color: #dc3545;
+}
+
+.modal-content {
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 123, 255, 0.2);
+}
+
+.form-control,
+.form-select {
+  border-radius: 0.375rem;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #b52a37;
+}
+
+#searchPatient {
+  max-width: 400px;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ced4da;
+}
+
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1055;
+}
+
+.btn-close {
+  outline: none;
+}
+
+tr:hover {
+  background-color: #f1f9ff;
+}
+  </style>
 </head>
 <body class="container py-4">
-  <h2>Physician Partner Dashboard</h2>
+  <!-- <h2>Physician Partner Dashboard</h2> -->
+<div class="text-end mb-3">
+  <button class="btn btn-outline-secondary btn-sm" onclick="logout()">Logout</button>
+</div>
 
-  <div class="mb-3">
-    <input type="text" id="searchPatient" class="form-control" placeholder="Search by mobile or name">
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <input type="text" id="searchPatient" class="form-control" placeholder="Search by mobile or name" />
+    <button class="btn" id="addNewBtn" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">+ Add Appointment</button>
   </div>
 
-  <button class="btn btn-success mb-2" onclick="addNewAppointment()">+ Add Appointment</button>
+  <div class="btn-group mb-3" role="group">
+    <!-- <input type="date" id="searchDate" class="form-control" onchange="searchByDate()" /> -->
+
+    <button class="btn btn-outline-primary" onclick="filterStatus('All')">All</button>
+    <button class="btn btn-outline-warning" onclick="filterStatus('Pending')">Pending</button>
+    <button class="btn btn-outline-success" onclick="filterStatus('completed')">Completed</button>
+    <!-- <button class="btn btn-outline-danger" onclick="filterStatus('Cancelled')">Cancelled</button> -->
+  </div>
 
   <table class="table table-bordered" id="appointmentTable">
     <thead>
@@ -24,87 +147,312 @@
         <th>Date</th>
         <th>Status</th>
         <th>Fee Paid</th>
-        <th>Actions</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody id="appointmentBody"></tbody>
   </table>
+
+  <!-- Add/Edit Appointment Modal -->
+  <div class="modal fade" id="addAppointmentModal" tabindex="-1" aria-labelledby="addAppointmentLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="addAppointmentForm" class="modal-content" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="addAppointmentLabel">Add New Appointment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="patientName" class="form-label">Patient Name</label>
+            <input type="text" id="patientName" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="mobile" class="form-label">Mobile</label>
+            <input type="tel" id="mobile" class="form-control" required pattern="[0-9]{10}" title="Enter 10 digit mobile number" />
+          </div>
+          <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" id="date" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select id="status" class="form-select" required>
+              <option value="Pending" selected>Pending</option>
+              <option value="completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" id="feePaid" class="form-check-input" />
+            <label for="feePaid" class="form-check-label">Fee Paid</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" id="saveBtn">Save Appointment</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Firebase & Bootstrap -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    // physician-dashboard.js
-let currentUser = null;
-const appointmentBody = document.getElementById("appointmentBody");
-const searchInput = document.getElementById("searchPatient");
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
+    authDomain: "hospital-management-syst-580a4.firebaseapp.com",
+    projectId: "hospital-management-syst-580a4",
+    storageBucket: "hospital-management-syst-580a4.appspot.com",
+    messagingSenderId: "318105236795",
+    appId: "1:318105236795:web:548c0e174553eeed67f31e"
+  };
 
-firebase.auth().onAuthStateChanged(async (user) => {
-  if (!user) return location.href = "login.html";
-  currentUser = user;
-  loadAppointments();
-});
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-async function loadAppointments() {
-  const snap = await db.collection("appointments")
-    .where("physicianPartnerId", "==", currentUser.uid)
-    .orderBy("date", "desc")
-    .get();
+  let currentUser, hospitalId, linkedProviderEmail;
+  let editMode = false, editDocId = null;
 
-  renderAppointments(snap.docs);
-}
+  const appointmentBody = document.getElementById("appointmentBody");
+  const searchInput = document.getElementById("searchPatient");
+  const addAppointmentForm = document.getElementById("addAppointmentForm");
+  const addAppointmentModal = new bootstrap.Modal(document.getElementById("addAppointmentModal"));
+  const modalTitle = document.getElementById("addAppointmentLabel");
+  const saveBtn = document.getElementById("saveBtn");
+  const patientName = document.getElementById("patientName");
+  const mobile = document.getElementById("mobile");
+  const date = document.getElementById("date");
+  const status = document.getElementById("status");
+  const feePaid = document.getElementById("feePaid");
+  const addNewBtn = document.getElementById("addNewBtn");
 
-function renderAppointments(docs) {
-  appointmentBody.innerHTML = "";
-  docs.forEach(doc => {
-    const data = doc.data();
-    const prn = `${data.mobile}-${data.patientName}`; // Mobile + Name as PRN
-    appointmentBody.innerHTML += `
-      <tr>
-        <td>${prn}</td>
-        <td>${data.patientName}</td>
-        <td>${data.mobile}</td>
-        <td>${new Date(data.date.seconds * 1000).toLocaleDateString()}</td>
-        <td>${data.status || "Pending"}</td>
-        <td>${data.feePaid ? "Yes" : "No"}</td>
-        <td>
-          <button class="btn btn-sm btn-primary" onclick="editAppointment('${doc.id}')">Edit</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteAppointment('${doc.id}')">Delete</button>
-        </td>
-      </tr>`;
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) return location.href = "login.html";
+    currentUser = user;
+
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    linkedProviderEmail = userDoc.data()?.linkedProviderEmail;
+
+    if (!linkedProviderEmail) {
+      alert("Linked provider not found.");
+      return;
+    }
+
+    const hospitalSnap = await db.collection("hospitals")
+      .where("providerEmail", "==", linkedProviderEmail).limit(1).get();
+
+    if (!hospitalSnap.empty) {
+      hospitalId = hospitalSnap.docs[0].id;
+      db.collection("hospitals").doc(hospitalId).collection("appointments")
+        .orderBy("date", "desc")
+        .onSnapshot(snapshot => renderAppointments(snapshot.docs));
+    } else {
+      alert("No hospital linked to this provider.");
+    }
   });
-}
 
-// Search filter
-searchInput.addEventListener("input", () => {
-  const filter = searchInput.value.toLowerCase();
-  const rows = appointmentBody.querySelectorAll("tr");
-  rows.forEach(row => {
-    const name = row.cells[1].textContent.toLowerCase();
-    const mobile = row.cells[2].textContent.toLowerCase();
-    row.style.display = (name.includes(filter) || mobile.includes(filter)) ? "" : "none";
-  });
-});
-
-function addNewAppointment() {
-  // Navigate to appointment add page or show modal (to be implemented)
-  alert("Add appointment flow goes here.");
-}
-
-async function deleteAppointment(id) {
-  if (confirm("Delete this appointment?")) {
-    await db.collection("appointments").doc(id).delete();
-    loadAppointments();
+  function renderAppointments(docs) {
+    appointmentBody.innerHTML = "";
+    // Sort by status: Pending first, then Completed, then Cancelled
+    const sorted = docs.sort((a, b) => {
+      const order = { "Pending": 1, "completed": 2, "Cancelled": 3 };
+      return (order[a.data().status] || 4) - (order[b.data().status] || 4);
+    });
+    sorted.forEach(doc => {
+      const d = doc.data();
+      // $("#Hospname").text(d.hospitalName || "N/A");
+      let statusClass = d.status === "completed" ? "badge-completed" : d.status === "Cancelled" ? "badge-cancelled" : "badge-pending";
+      appointmentBody.innerHTML += `
+        <tr data-status="${d.status}">
+          <td>${d.mobile}-${d.patientName}</td>
+          <td>${d.patientName}</td>
+          <td>${d.mobile}</td>
+          <td>${d.date?.toDate().toLocaleDateString() || "N/A"}</td>
+          <td><span class="badge ${statusClass}">${d.status || "Pending"}</span></td>
+          <td>${d.feePaid ? "Yes" : "No"}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="editAppointment('${doc.id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteAppointment('${doc.id}')">Delete</button>
+          </td>
+        </tr>`;
+    });
   }
-}
+// function renderAppointments(docs) {
+//   appointmentBody.innerHTML = "";
 
-function editAppointment(id) {
-  // Navigate to appointment edit page or show modal (to be implemented)
-  alert("Edit appointment flow goes here for ID: " + id);
+//   // Get today's date (with time set to 00:00:00)
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0); // Reset time to midnight
+
+//   // Sort by status: Pending first, then Completed, then Cancelled
+//   const sorted = docs.sort((a, b) => {
+//     const order = { "Pending": 1, "completed": 2, "Cancelled": 3 };
+//     return (order[a.data().status] || 4) - (order[b.data().status] || 4);
+//   });
+
+//   sorted.forEach(doc => {
+//     const d = doc.data();
+
+//     // Check if the appointment date is today
+//     const appointmentDate = d.date?.toDate();
+//     const isToday = appointmentDate && (
+//       appointmentDate.getFullYear() === today.getFullYear() &&
+//       appointmentDate.getMonth() === today.getMonth() &&
+//       appointmentDate.getDate() === today.getDate()
+//     );
+
+//     if (isToday) {
+//       let statusClass =
+//         d.status === "completed" ? "badge-completed" :
+//         d.status === "Cancelled" ? "badge-cancelled" :
+//         "badge-pending";
+
+//       appointmentBody.innerHTML += `
+//         <tr data-status="${d.status}">
+//           <td>${d.mobile}-${d.patientName}</td>
+//           <td>${d.patientName}</td>
+//           <td>${d.mobile}</td>
+//           <td>${appointmentDate.toLocaleDateString() || "N/A"}</td>
+//           <td><span class="badge ${statusClass}">${d.status || "Pending"}</span></td>
+//           <td>${d.feePaid ? "Yes" : "No"}</td>
+//           <td>
+//             <button class="btn btn-sm btn-primary" onclick="editAppointment('${doc.id}')">Edit</button>
+//             <button class="btn btn-sm btn-danger" onclick="deleteAppointment('${doc.id}')">Delete</button>
+//           </td>
+//         </tr>`;
+//     }
+//   });
+// }
+
+  function filterStatus(status) {
+    document.querySelectorAll("#appointmentBody tr").forEach(row => {
+      const s = row.getAttribute("data-status");
+      row.style.display = status === "All" || s === status ? "" : "none";
+    });
+  }
+
+  searchInput.addEventListener("input", () => {
+    const val = searchInput.value.toLowerCase();
+    document.querySelectorAll("#appointmentBody tr").forEach(row => {
+      const name = row.cells[1].textContent.toLowerCase();
+      const mob = row.cells[2].textContent.toLowerCase();
+      row.style.display = (name.includes(val) || mob.includes(val)) ? "" : "none";
+    });
+  });
+
+  addAppointmentForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!addAppointmentForm.checkValidity()) {
+      addAppointmentForm.classList.add("was-validated");
+      return;
+    }
+
+    const data = {
+      patientName: patientName.value.trim(),
+      mobile: mobile.value.trim(),
+      date: new Date(date.value),
+      status: status.value,
+      feePaid: feePaid.checked,
+      physicianPartnerEmail: currentUser.email,
+      hospitalId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+      if (editMode && editDocId) {
+        await db.collection("hospitals").doc(hospitalId).collection("appointments").doc(editDocId).update(data);
+        alert("Updated!");
+      } else {
+        await db.collection("hospitals").doc(hospitalId).collection("appointments").add(data);
+        alert("Appointment Added!");
+      }
+      resetForm();
+      addAppointmentModal.hide();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
+
+  async function editAppointment(id) {
+    const doc = await db.collection("hospitals").doc(hospitalId).collection("appointments").doc(id).get();
+    if (!doc.exists) return alert("Not found");
+    const d = doc.data();
+
+    patientName.value = d.patientName;
+    mobile.value = d.mobile;
+    date.value = d.date.toDate().toISOString().split('T')[0];
+    status.value = d.status;
+    feePaid.checked = d.feePaid;
+
+    editMode = true;
+    editDocId = id;
+    modalTitle.textContent = "Edit Appointment";
+    saveBtn.textContent = "Update";
+    addAppointmentModal.show();
+  }
+
+  async function deleteAppointment(id) {
+    if (confirm("Delete?")) {
+      await db.collection("hospitals").doc(hospitalId).collection("appointments").doc(id).delete();
+      alert("Deleted.");
+    }
+  }
+
+  function resetForm() {
+    addAppointmentForm.reset();
+    editMode = false;
+    editDocId = null;
+    modalTitle.textContent = "Add Appointment";
+    saveBtn.textContent = "Save";
+  }
+
+  addNewBtn.addEventListener("click", resetForm);
+  window.editAppointment = editAppointment;
+  window.deleteAppointment = deleteAppointment;
+</script>
+<!-- Chat Widget (Physician talking to Provider) -->
+<button id="chatToggle" class="btn btn-info position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">💬 Chat</button>
+
+<div id="chatBox" class="position-fixed border rounded p-2 bg-white shadow d-none" 
+     data-receiver="provider" data-role="physician"
+     style="width: 300px; height: 400px; bottom: 70px; right: 20px; z-index: 1000; display: flex; flex-direction: column;">
+  <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+    <strong>Chat with <span id="chatTargetName">...</span></strong>
+    <span id="chatTargetStatus" class="badge bg-secondary">Offline</span>
+    <button onclick="chatBox.classList.add('d-none')" class="btn btn-sm btn-close"></button>
+  </div>
+  <div id="chatMessages" class="flex-grow-1 overflow-auto mb-2" style="font-size: 0.9rem;"></div>
+  <input type="file" id="chatFile" class="form-control mb-1" accept=".jpg,.png,.pdf" />
+  <div class="input-group">
+    <input type="text" id="chatInput" class="form-control" placeholder="Type a message...">
+    <button id="sendChatBtn" class="btn btn-primary">Send</button>
+  </div>
+</div>
+<script>
+  function logout() {
+  auth.signOut().then(() => {
+    alert("Logged out successfully.");
+    window.location.href = "login.html";
+  }).catch((error) => {
+    console.error("Logout Error:", error);
+    alert("Error during logout. Check console.");
+  });
 }
 
 </script>
-  <!-- Firebase JS -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
-  <script src="js/firebase-config.js"></script>
-  <script src="js/physician-dashboard.js"></script>
+<!-- Notification Sound -->
+<audio id="ping" src="/IMAGES/ping.mp3" preload="auto"></audio>
+
+<script src="/chat.js"></script>
+
+
 </body>
 </html>

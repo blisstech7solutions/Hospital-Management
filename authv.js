@@ -1,55 +1,28 @@
+// JS/authv.js for compat version (no imports)
+document.getElementById("signup-form")?.addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const email = document.getElementById("signup-email").value;
+  const password = document.getElementById("signup-password").value;
 
-// js/authv.js
+  try {
+    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+    alert("Signup successful!");
+    window.location.href = "login.html";
+  } catch (err) {
+    alert("Signup Error: " + err.message);
+  }
+});
 
-// Sign up
-function signUp(email, password) {
-  auth.createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      console.log("Signup successful:", userCredential.user);
-      alert("Signup successful!");
-      window.location.href = "login.html";
-    })
-    .catch((error) => {
-      console.error("Signup error:", error.message);
-      alert("Error: " + error.message);
-    });
-}
+document.getElementById("login-form")?.addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
 
-// Login
-function login(email, password) {
-  auth.signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      console.log("Login successful:", userCredential.user);
-      alert("Login successful!");
-      window.location.href = "admin-dashboard.html";
-    })
-    .catch((error) => {
-      console.error("Login error:", error.message);
-      alert("Error: " + error.message);
-    });
-}
-
-// Logout
-function logout() {
-  auth.signOut()
-    .then(() => {
-      console.log("Logged out");
-      alert("Logged out!");
-      window.location.href = "login.html";
-    })
-    .catch((error) => {
-      console.error("Logout error:", error.message);
-      alert("Error: " + error.message);
-    });
-}
-
-// Auth state observer
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    console.log("User is logged in:", user.email);
-    // Optionally update UI here (e.g., show user info)
-  } else {
-    console.log("No user logged in");
-    // Optionally redirect if necessary
+  try {
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+    alert("Login successful!");
+    window.location.href = "provider-dashboard.html";
+  } catch (err) {
+    alert("Login Error: " + err.message);
   }
 });
