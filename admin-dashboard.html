@@ -12,26 +12,55 @@
   </style>
 </head>
 <body class="container py-4">
-  <h2 class="mb-4 text-center">🏥 Admin - Hospital Control Dashboard</h2>
+  <h2 class="mb-4 text-center">🏥 Admin - Hospital & User Control Dashboard</h2>
 
-  <!-- Dashboard Summary Cards -->
-  <div class="row mb-4 text-center">
-    <div class="col"><div class="border rounded p-3 bg-light"><h5>Total</h5><div id="totalCount">0</div></div></div>
-    <div class="col"><div class="border rounded p-3 bg-light"><h5>Approved</h5><div id="approvedCount">0</div></div></div>
-    <div class="col"><div class="border rounded p-3 bg-light"><h5>Pending</h5><div id="pendingCount">0</div></div></div>
-    <div class="col"><div class="border rounded p-3 bg-light"><h5>Rejected</h5><div id="rejectedCount">0</div></div></div>
+  <!-- DASHBOARD TABS -->
+  <ul class="nav nav-tabs mb-4" id="dashboardTabs">
+    <li class="nav-item">
+      <a class="nav-link active" href="#" onclick="showSection('hospitals')">Hospitals</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="showSection('users')">Users</a>
+    </li>
+  </ul>
+
+  <!-- SECTION: HOSPITALS -->
+  <div id="hospitalsSection">
+    <div class="row mb-4 text-center">
+      <div class="col"><div class="border rounded p-3 bg-light"><h5>Total</h5><div id="totalCount">0</div></div></div>
+      <div class="col"><div class="border rounded p-3 bg-light"><h5>Approved</h5><div id="approvedCount">0</div></div></div>
+      <div class="col"><div class="border rounded p-3 bg-light"><h5>Pending</h5><div id="pendingCount">0</div></div></div>
+      <div class="col"><div class="border rounded p-3 bg-light"><h5>Rejected</h5><div id="rejectedCount">0</div></div></div>
+    </div>
+
+    <div class="mb-3 text-center">
+      <button class="btn btn-outline-primary me-2" onclick="loadHospitals('all')">All</button>
+      <button class="btn btn-outline-success me-2" onclick="loadHospitals('approved')">Approved</button>
+      <button class="btn btn-outline-warning me-2" onclick="loadHospitals('pending')">Pending</button>
+      <button class="btn btn-outline-danger me-2" onclick="loadHospitals('rejected')">Rejected</button>
+    </div>
+
+    <div id="hospitalList" class="border rounded p-3 bg-light"></div>
   </div>
 
-  <!-- Filter Buttons -->
-  <div class="mb-3 text-center">
-    <button class="btn btn-outline-primary me-2" onclick="loadHospitals('all')">All</button>
-    <button class="btn btn-outline-success me-2" onclick="loadHospitals('approved')">Approved</button>
-    <button class="btn btn-outline-warning me-2" onclick="loadHospitals('pending')">Pending</button>
-    <button class="btn btn-outline-danger me-2" onclick="loadHospitals('rejected')">Rejected</button>
-  </div>
+  <!-- SECTION: USERS -->
+  <div id="usersSection" style="display: none;">
+    <div class="row mb-4 text-center">
+      <div class="col"><div class="border rounded p-3 bg-light"><h5>Total Users</h5><div id="totalUsers">0</div></div></div>
+      <div class="col"><div class="border rounded p-3 bg-light"><h5>Approved</h5><div id="approvedUsers">0</div></div></div>
+      <div class="col"><div class="border rounded p-3 bg-light"><h5>Pending</h5><div id="pendingUsers">0</div></div></div>
+    </div>
 
-  <!-- Hospital List -->
-  <div id="hospitalList" class="border rounded p-3 bg-light"></div>
+    <div class="mb-3 text-center">
+      <button class="btn btn-outline-primary me-2" onclick="loadUsers('all')">All</button>
+      <button class="btn btn-outline-success me-2" onclick="loadUsers('approved')">Approved</button>
+      <button class="btn btn-outline-warning me-2" onclick="loadUsers('pending')">Pending</button>
+      <button class="btn btn-outline-info me-2" onclick="loadUsers('provider')">Providers</button>
+      <button class="btn btn-outline-dark me-2" onclick="loadUsers('physician')">Physicians</button>
+    </div>
+
+    <div id="userList" class="border rounded p-3 bg-light"></div>
+  </div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -39,7 +68,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase Config (Use yours if different)
     const firebaseConfig = {
       apiKey: "AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
       authDomain: "hospital-management-syst-580a4.firebaseapp.com",
@@ -65,7 +93,16 @@
       }
       loadDashboardCounts();
       loadHospitals('all');
+      loadUsers('all');
     });
+
+    function showSection(section) {
+      document.getElementById("hospitalsSection").style.display = section === 'hospitals' ? 'block' : 'none';
+      document.getElementById("usersSection").style.display = section === 'users' ? 'block' : 'none';
+      const tabs = document.querySelectorAll('#dashboardTabs .nav-link');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      document.querySelector(`#dashboardTabs .nav-link[href="#"][onclick*="${section}"]`).classList.add('active');
+    }
 
     async function loadDashboardCounts() {
       const snap = await db.collection("hospitals").get();
@@ -97,9 +134,17 @@
         const h = doc.data();
         html += `
           <div class="mb-3 border-bottom pb-2">
-            <h5>${h.name}</h5>
-            <p class="mb-1">${h.address}</p>
-            <small>Provider Email: ${h.createdBy || 'N/A'} | Partner: ${h.partnerEmail || 'N/A'}</small><br>
+            <h5>${h.hospitalName || h.name}</h5>
+            <p class="mb-1">${h.hospitalAddress || h.address}</p>
+            <p class="mb-1"><strong>Doctor:</strong> ${h.doctorName || 'N/A'} (${h.doctorSpecialty || 'N/A'})</p>
+            <p class="mb-1"><strong>Education:</strong> ${h.doctorEducation || 'N/A'}</p>
+            <small>
+              Hospital Email: ${h.hospitalEmail || 'N/A'}<br>
+              Provider Email: ${h.providerEmail || h.createdBy || 'N/A'}<br>
+              Partner Email: ${h.partnerEmail || 'N/A'}<br>
+              Created: ${h.createdAt?.toDate().toLocaleString() || 'N/A'}<br>
+              Updated: ${h.updatedAt?.toDate().toLocaleString() || 'N/A'}
+            </small><br>
             <span class="status-badge ${h.status}">Status: ${h.status}</span><br>
             ${h.status === 'pending' ? `
               <button class="btn btn-sm btn-success me-2" onclick="approveHospital('${doc.id}')">Approve</button>
@@ -130,6 +175,56 @@
         await db.collection("hospitals").doc(id).delete();
         loadDashboardCounts();
         loadHospitals('all');
+      }
+    }
+
+    async function loadUsers(filter) {
+      let query = db.collection("users");
+      if (filter === 'approved') query = query.where("isApproved", "==", true);
+      else if (filter === 'pending') query = query.where("isApproved", "==", false);
+      else if (filter === 'provider' || filter === 'physician') query = query.where("role", "==", filter);
+
+      const snap = await query.get();
+      let html = "";
+      let total = 0, approved = 0, pending = 0;
+
+      snap.forEach(doc => {
+        const u = doc.data();
+        total++;
+        if (u.isApproved) approved++;
+        else pending++;
+
+        html += `
+          <div class="mb-3 border-bottom pb-2">
+            <h5>${u.role.toUpperCase()} - ${u.email}</h5>
+            <p><small>Appointments Email: ${u.appointmentsEmail || 'N/A'}</small></p>
+            ${u.role === 'physician' ? `<p><small>Linked Provider: ${u.linkedProviderEmail || 'N/A'}</small></p>` : ""}
+            <span class="status-badge ${u.isApproved ? 'approved' : 'pending'}">
+              Status: ${u.isApproved ? 'Approved' : 'Pending'}
+            </span><br>
+            ${u.isApproved === false ? `
+              <button class="btn btn-sm btn-success me-2" onclick="approveUser('${doc.id}')">Approve</button>
+            ` : ''}
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${doc.id}')">Delete</button>
+          </div>
+        `;
+      });
+
+      document.getElementById("userList").innerHTML = html || "<i>No users found.</i>";
+      document.getElementById("totalUsers").innerText = total;
+      document.getElementById("approvedUsers").innerText = approved;
+      document.getElementById("pendingUsers").innerText = pending;
+    }
+
+    async function approveUser(userId) {
+      await db.collection("users").doc(userId).update({ isApproved: true });
+      loadUsers('all');
+    }
+
+    async function deleteUser(userId) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        await db.collection("users").doc(userId).delete();
+        loadUsers('all');
       }
     }
   </script>
