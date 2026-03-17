@@ -202,6 +202,35 @@ margin-bottom:5px;
     flex:1;
   }
 }
+.med-card{
+  background:white;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+
+.med-row{
+  display:flex;
+  gap:8px;
+  margin-bottom:8px;
+}
+
+.med-row input,
+.med-row select{
+  flex:1;
+  font-size:14px;
+}
+
+.med-checks{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+}
+
+.med-remove{
+  text-align:right;
+}
 </style>
 </head>
 
@@ -323,22 +352,11 @@ Email: <span id="hospitalEmail"></span>
 
 <h5>Medicines</h5>
 
-<table class="table table-bordered" id="medTable">
+<div id="medContainer"></div>
 
-<thead>
-<tr>
-<th>Type</th>
-<th>Name</th>
-<th>Dosage</th>
-<th>M-A-N</th>
-<th>Before Food</th>
-<th></th>
-</tr>
-</thead>
-
-<tbody></tbody>
-
-</table>
+<button type="button" class="btn btn-primary w-100 mb-3" onclick="addRow()">
++ Add Medicine
+</button>
 
 <button type="button" class="btn btn-outline-primary mb-3" onclick="addRow()">+ Add Medicine</button>
 
@@ -593,89 +611,80 @@ return `वेळ: ${timing} (${food})`;
 }
 function addRow(){
 
-const row=document.createElement("tr");
+const card = document.createElement("div");
+card.className = "med-card";
 
-row.innerHTML=`
-<td>
+card.innerHTML = `
+<div class="med-row">
 <select class="form-select">
 <option>Tablet</option>
 <option>Syrup</option>
 <option>Cream</option>
 <option>Injection</option>
 </select>
-</td>
+</div>
 
-<td class="autocomplete">
-<input class="form-control med-name">
+<div class="med-row autocomplete">
+<input class="form-control med-name" placeholder="Medicine name">
 <div class="autocomplete-list"></div>
-</td>
+</div>
 
-<td>
-<input class="form-control">
-</td>
+<div class="med-row">
+<input class="form-control" placeholder="Dosage">
+</div>
 
-<td class="text-center">
-<input type="checkbox"> M
-<input type="checkbox"> A
-<input type="checkbox"> N
-</td>
+<div class="med-checks">
+<label><input type="checkbox"> M</label>
+<label><input type="checkbox"> A</label>
+<label><input type="checkbox"> N</label>
+</div>
 
-<td class="text-center">
-<input type="checkbox">
-</td>
+<div class="med-checks">
+<label><input type="checkbox"> Before Food</label>
+</div>
 
-<td>
-<button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button>
-</td>
+<div class="med-remove">
+<button class="btn btn-sm btn-danger" onclick="this.closest('.med-card').remove()">Remove</button>
+</div>
 `;
 
-medTable.querySelector("tbody").appendChild(row);
+document.getElementById("medContainer").appendChild(card);
 
-const input=row.querySelector(".med-name");
-const list=row.querySelector(".autocomplete-list");
+/* autocomplete same logic */
+const input = card.querySelector(".med-name");
+const list = card.querySelector(".autocomplete-list");
 
-input.addEventListener("input",async()=>{
+input.addEventListener("input", async () => {
+const q = input.value;
+if(q.length < 2) return;
 
-const q=input.value;
-
-if(q.length<2) return;
-
-list.innerHTML="Loading...";
+list.innerHTML = "Loading...";
 
 try{
+const res = await fetch(`https://api.fda.gov/drug/label.json?search=openfda.brand_name:${q}&limit=5`);
+const data = await res.json();
 
-const res=await fetch(`https://api.fda.gov/drug/label.json?search=openfda.brand_name:${q}&limit=5`);
-const data=await res.json();
-
-list.innerHTML="";
+list.innerHTML = "";
 
 data.results.forEach(m=>{
+const name = m.openfda.brand_name ? m.openfda.brand_name[0] : "Medicine";
 
-const name=m.openfda.brand_name?m.openfda.brand_name[0]:"Medicine";
+const item = document.createElement("div");
+item.className = "autocomplete-item";
+item.textContent = name;
 
-const item=document.createElement("div");
-item.className="autocomplete-item";
-item.textContent=name;
-
-item.onclick=()=>{
-input.value=name;
-list.innerHTML="";
+item.onclick = () => {
+input.value = name;
+list.innerHTML = "";
 };
 
 list.appendChild(item);
-
 });
-
 }catch{
-
-list.innerHTML="<div class='autocomplete-item'>No Result</div>";
-
+list.innerHTML = "<div>No result</div>";
 }
-
 });
-
 }
-
 addRow();
 
 function startVoice(){
@@ -705,29 +714,32 @@ prescriptionForm.addEventListener("submit",async(e)=>{
 e.preventDefault();
 
 const meds=[];
+document.querySelectorAll("#medContainer .med-card").forEach(card=>{
 
-document.querySelectorAll("#medTable tbody tr").forEach(tr=>{
+const type = card.querySelector("select").value;
 
-const type = tr.querySelector("select").value;
+const inputs = card.querySelectorAll("input");
 
-const name = tr.querySelectorAll("input")[0].value;
+const name = inputs[0].value;
+const dosage = inputs[1].value;
 
-const dosage = tr.querySelectorAll("input")[1].value;
+const checks = card.querySelectorAll(".med-checks input");
 
-const times = [...tr.querySelectorAll("td:nth-child(4) input")]
-.map(cb => cb.checked ? "1":"0")
-.join("-");
+const time = [
+checks[0].checked ? "1":"0",
+checks[1].checked ? "1":"0",
+checks[2].checked ? "1":"0"
+].join("-");
 
-const beforeFood = tr.querySelector("td:nth-child(5) input").checked;
+const beforeFood = checks[3].checked;
 
 meds.push({
 type,
 name,
 dosage,
-time:times,
+time,
 beforeFood
 });
-
 });
 const data={
 
