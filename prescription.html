@@ -516,30 +516,37 @@ gender.value = old.gender || gender.value;
 
 /* Clear table */
 
-medTable.querySelector("tbody").innerHTML="";
+document.getElementById("medContainer").innerHTML = "";
 
 /* Load medicines */
-
 (old.medicines || []).forEach(m=>{
 
 addRow();
 
-const row = medTable.querySelector("tbody tr:last-child");
+const card = document.querySelector("#medContainer .med-card:last-child");
 
-row.querySelector("select").value = m.type;
+const select = card.querySelector("select");
+const inputs = card.querySelectorAll("input");
+const checks = card.querySelectorAll(".med-checks input");
 
-row.querySelectorAll("input")[0].value = m.name;
-row.querySelectorAll("input")[1].value = m.dosage;
+/* Fill values */
+
+select.value = m.type || "Tablet";
+
+inputs[0].value = m.name || "";
+inputs[1].value = m.dosage || "";
+
+/* Timing */
 
 const times = (m.time || "0-0-0").split("-");
 
-const checkboxes = row.querySelectorAll("td:nth-child(4) input");
+checks[0].checked = times[0] === "1";
+checks[1].checked = times[1] === "1";
+checks[2].checked = times[2] === "1";
 
-checkboxes[0].checked = times[0] === "1";
-checkboxes[1].checked = times[1] === "1";
-checkboxes[2].checked = times[2] === "1";
+/* Before food */
 
-row.querySelector("td:nth-child(5) input").checked = m.beforeFood;
+checks[3].checked = m.beforeFood || false;
 
 });
 
@@ -685,8 +692,9 @@ list.innerHTML = "<div>No result</div>";
 }
 });
 }
-addRow();
-
+if(document.getElementById("medContainer").children.length === 0){
+  addRow();
+}
 function startVoice(){
 
 const rec=new webkitSpeechRecognition();
@@ -703,7 +711,7 @@ function clearForm(){
 
 prescriptionForm.reset();
 
-medTable.querySelector("tbody").innerHTML="";
+document.getElementById("medContainer").innerHTML = "";
 
 addRow();
 
