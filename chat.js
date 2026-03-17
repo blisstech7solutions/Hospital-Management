@@ -1,51 +1,177 @@
-const chatBtn = document.getElementById("chatToggle");
-const chatBox = document.getElementById("chatBox");
-const chatMessages = document.getElementById("chatMessages");
-const chatInput = document.getElementById("chatInput");
-const sendBtn = document.getElementById("sendChatBtn");
+/* ================= CHAT SYSTEM ================= */
 
-let currentUserId = null;
-let receiverRole = null; // "provider" or "physician"
+var chatBtn = document.getElementById("chatToggle");
+var chatBox = document.getElementById("chatBox");
+var chatMessages = document.getElementById("chatMessages");
+var chatInput = document.getElementById("chatInput");
+var sendBtn = document.getElementById("sendChatBtn");
+var statusLabel = document.getElementById("chatTargetStatus");
 
-// Toggle Chat UI
-chatBtn.onclick = () => chatBox.classList.toggle("d-none");
+var currentUserId = null;
+var receiverRole = null;
+/* Toggle chat window */
 
-// Auth Check
-firebase.auth().onAuthStateChanged((user) => {
-  if (!user) return;
-  currentUserId = user.uid;
-  receiverRole = chatBox.getAttribute("data-receiver");
-  listenForMessages();
+if (chatBtn && chatBox) {
+chatBtn.onclick = function () {
+chatBox.classList.toggle("d-none");
+};
+}
+
+/* ================= AUTH ================= */
+
+firebase.auth().onAuthStateChanged(async function(user){
+
+if(!user) return;
+
+currentUserId = user.uid;
+
+if(chatBox){
+receiverRole = chatBox.dataset.receiver || null;
+}
+
+try{
+
+var userDoc = await db.collection("users").doc(user.uid).get();
+
+if(!userDoc.exists) return;
+
+hospitalId = userDoc.data().hospitalId || null;
+
+/* Set user online */
+
+await db.collection("users").doc(user.uid).update({
+online:true,
+lastSeen:firebase.firestore.FieldValue.serverTimestamp()
 });
 
-sendBtn.onclick = async () => {
-  const text = chatInput.value.trim();
-  if (!text) return;
-  const msg = {
-    text,
-    from: currentUserId,
-    toRole: receiverRole,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-  };
-  await db.collection("chat").add(msg);
-  chatInput.value = "";
+/* Start listeners */
+
+listenForMessages();
+listenUserStatus();
+
+}catch(e){
+console.error(e);
+}
+
+});
+
+/* ================= SEND MESSAGE ================= */
+
+if(sendBtn){
+
+sendBtn.onclick = async function(){
+
+if(!chatInput || !hospitalId || !currentUserId) return;
+
+var text = chatInput.value.trim();
+if(text === "") return;
+
+var msg = {
+text:text,
+from:currentUserId,
+role: chatBox && chatBox.dataset.role ? chatBox.dataset.role : "",
+timestamp:firebase.firestore.FieldValue.serverTimestamp()
 };
 
-function listenForMessages() {
-  db.collection("chat")
-    .orderBy("timestamp", "asc")
-    .onSnapshot((snapshot) => {
-      chatMessages.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const isMe = data.from === currentUserId;
-        const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString() : '';
-        chatMessages.innerHTML += `
-          <div class="text-${isMe ? 'end' : 'start'} mb-2">
-            <span class="badge ${isMe ? 'bg-primary' : 'bg-secondary'}">${data.text} <span style="font-size: 0.7rem;">✔️ ${time}</span></span>
-          </div>
-        `;
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      });
-    });
+try{
+
+await db.collection("hospitals")
+.doc(hospitalId)
+.collection("chat")
+.add(msg);
+
+chatInput.value="";
+
+}catch(e){
+console.error(e);
 }
+
+};
+
+}
+
+/* ================= LISTEN MESSAGES ================= */
+
+function listenForMessages(){
+
+if(!hospitalId || !chatMessages) return;
+db.collection("hospitals")
+.doc(hospitalId)
+.collection("chat")
+.orderBy("timestamp","asc")
+.onSnapshot(function(snapshot){
+
+chatMessages.innerHTML="";
+
+snapshot.forEach(function(doc){
+
+var data = doc.data();
+var isMe = data.from === currentUserId;
+
+var time="";
+if(data.timestamp && data.timestamp.toDate){
+time = new Date(data.timestamp.toDate()).toLocaleTimeString();
+}
+
+var wrapper = document.createElement("div");
+wrapper.className = "text-" + (isMe ? "end":"start") + " mb-2";
+
+var badge = document.createElement("span");
+badge.className = "badge " + (isMe ? "bg-primary":"bg-secondary");
+
+badge.innerHTML =
+(data.text || "") +
+"<span style='font-size:0.7rem'> " + time + "</span>";
+
+wrapper.appendChild(badge);
+chatMessages.appendChild(wrapper);
+
+});
+
+chatMessages.scrollTop = chatMessages.scrollHeight;
+
+});
+
+}
+
+/* ================= ONLINE STATUS ================= */
+
+function listenUserStatus(){
+
+if(!receiverRole || !statusLabel) return;
+
+db.collection("users")
+.where("role","==",receiverRole)
+.limit(1)
+.onSnapshot(function(snapshot){
+
+if(snapshot.empty) return;
+
+var user = snapshot.docs[0].data();
+
+if(user.online){
+statusLabel.innerText="Online";
+statusLabel.className="badge bg-success";
+}else{
+statusLabel.innerText="Offline";
+statusLabel.className="badge bg-secondary";
+}
+
+});
+
+}
+
+/* ================= OFFLINE WHEN TAB CLOSE ================= */
+
+window.addEventListener("beforeunload",function(){
+
+if(!currentUserId) return;
+
+db.collection("users")
+.doc(currentUserId)
+.update({
+online:false,
+lastSeen:firebase.firestore.FieldValue.serverTimestamp()
+});
+
+});

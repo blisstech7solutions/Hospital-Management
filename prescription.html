@@ -1,278 +1,812 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Create Prescription</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    .section-title {
-      border-bottom: 2px solid #ccc;
-      margin-bottom: 1rem;
-      padding-bottom: .25rem;
-    }
-    .top-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-bottom: 1rem;
-    }
-    .clear-btn, .success-alert {
-      display: none;
-    }
 
-    /* Hide form & buttons when printing */
-    @media print {
-      .no-print, .btn, form {
-        display: none !important;
-      }
-      #printView {
-        display: block !important;
-      }
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    /* Hidden by default */
-    #printView {
-      display: none;
-    }
-  </style>
+<title>Prescription</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body{
+background:#f4f6fb;
+font-family:system-ui;
+}
+
+/* HEADER */
+
+.prescription-header{
+border-bottom:4px solid #0d6efd;
+margin-bottom:20px;
+padding-bottom:10px;
+}
+
+.logo{
+width:60px;
+}
+@media print{
+
+body *{
+visibility:hidden;
+}
+
+#printView,
+#printView *{
+visibility:visible;
+}
+
+#printView{
+position:absolute;
+left:0;
+top:0;
+width:100%;
+}
+
+}
+.doctor-name{
+font-weight:700;
+color:#0d6efd;
+}
+
+/* CARD */
+
+.card{
+border:none;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ACTIONS */
+
+.top-actions{
+display:flex;
+justify-content:flex-end;
+gap:10px;
+margin-bottom:15px;
+flex-wrap:wrap;
+}
+
+/* MED AUTOCOMPLETE */
+
+.autocomplete{
+position:relative;
+}
+
+.autocomplete-list{
+position:absolute;
+background:white;
+border:1px solid #ddd;
+width:100%;
+z-index:10;
+max-height:200px;
+overflow:auto;
+}
+
+.autocomplete-item{
+padding:6px;
+cursor:pointer;
+}
+
+.autocomplete-item:hover{
+background:#f1f1f1;
+}
+.print-vitals{
+margin-top:10px;
+font-size:14px;
+}
+/* PRINT */
+
+#printView{
+display:none;
+}
+
+@media print{
+
+body{
+background:white;
+font-family:serif;
+}
+
+.no-print{
+display:none !important;
+}
+
+#printView{
+display:block;
+width:850px;
+margin:auto;
+padding:30px;
+border:1px solid #ddd;
+}
+
+.print-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.print-patient{
+display:flex;
+justify-content:space-between;
+margin-top:10px;
+font-size:14px;
+}
+
+.rx-section{
+margin-top:20px;
+min-height:300px;
+}
+
+.rx-section h4{
+font-size:32px;
+font-weight:bold;
+}
+
+.signature{
+margin-top:80px;
+text-align:right;
+}
+
+.sign-line{
+border-top:1px solid black;
+width:200px;
+margin-left:auto;
+margin-bottom:5px;
+}
+
+}
+.sticky-actions{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #f4f6fb;
+  padding: 6px 0; /* 🔽 reduced */
+  border-bottom: 1px solid #ddd;
+
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 🔽 smaller controls */
+.sticky-actions select{
+  height: 34px;
+  font-size: 13px;
+  padding: 4px 8px;
+  max-width: 160px;
+}
+
+.sticky-actions .btn{
+  padding: 4px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+/* mobile */
+@media (max-width:576px){
+  .sticky-actions{
+    gap: 6px;
+  }
+
+  .sticky-actions select{
+    flex:1;
+    min-width:100px;
+  }
+
+  .sticky-actions .btn{
+    flex:1;
+  }
+}
+</style>
 </head>
+
 <body class="container py-4">
 
-  <!-- Action Buttons -->
-  <div class="top-actions no-print">
-    <button class="btn btn-outline-warning clear-btn" id="clearBtn" onclick="clearForm()">🧹 Clear</button>
-    <button type="submit" form="prescriptionForm" class="btn btn-success">💾 Save & Print</button>
-  </div>
+<!-- ACTION BUTTONS -->
 
-  <!-- Patient Display Info -->
-  <div class="card p-3 mb-4 bg-light">
-    <!-- <h5 class="mb-2">👤 Patient Details</h5> -->
-    <div><strong>Name:</strong> <span id="displayName"></span></div>
-    <div><strong>Mobile:</strong> <span id="displayMobile"></span></div>
-    <div><strong>Date:</strong> <span id="displayDate"></span></div>
-  </div>
+<div class="top-actions no-print sticky-actions">
 
-  <!-- Hidden Inputs -->
-  <input type="hidden" id="hospitalId" />
-  <input type="hidden" id="appointmentId" />
+  <select id="language" class="form-select">
+    <option value="en">English</option>
+    <option value="mr">Marathi</option>
+  </select>
 
-  <!-- Form Start -->
-  <form id="prescriptionForm" class="card p-4 mb-4 no-print">
-    <h5 class="section-title">🩺 Diagnosis</h5>
-    <input type="text" id="disease" class="form-control mb-2" placeholder="Disease Name" required />
-    <div class="row g-2 mb-3">
-      <div class="col-md-3"><input class="form-control" id="bp" placeholder="BP" /></div>
-      <div class="col-md-3"><input class="form-control" id="sugar" placeholder="Sugar" /></div>
-      <div class="col-md-3"><input class="form-control" id="pulse" placeholder="Pulse" /></div>
-      <div class="col-md-3"><input class="form-control" id="temp" placeholder="Temperature" /></div>
-    </div>
+  <button class="btn btn-outline-warning" onclick="clearForm()">Clear</button>
 
-    <h5 class="section-title">💊 Medicines</h5>
-    <table class="table table-bordered" id="medTable">
-      <thead class="table-light">
-        <tr><th>Type</th><th>Name</th><th>Dosage</th><th>Time (M-A-N)</th><th>Before Food</th><th>Action</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <button type="button" class="btn btn-outline-primary mb-3" onclick="addRow()">+ Add Medicine</button>
+  <button form="prescriptionForm" class="btn btn-success">
+    Save & Print
+  </button>
 
-    <div class="alert alert-success success-alert" id="successAlert">✅ Prescription saved!</div>
-  </form>
+</div>
 
-  <!-- Printable View -->
-  <div id="printView">
-    <!-- <h4 class="text-center text-primary">📝 Prescription</h4>
-    <p><strong>Name:</strong> <span id="pName"></span></p>
-    <p><strong>Mobile:</strong> <span id="pMobile"></span></p>
-    <p><strong>Date:</strong> <span id="pDate"></span></p> -->
-    <hr>
-    <p><strong>Disease:</strong> <span id="pDisease"></span></p>
-    <p><strong>BP:</strong> <span id="pBp"></span> |
-       <strong>Sugar:</strong> <span id="pSugar"></span> |
-       <strong>Pulse:</strong> <span id="pPulse"></span> |
-       <strong>Temp:</strong> <span id="pTemp"></span>
-    </p>
-    <h5 class="mt-4">Medicines</h5>
-    <table class="table table-bordered">
-      <thead><tr><th>Type</th><th>Name</th><th>Dosage</th><th>Time</th><th>Before Food</th></tr></thead>
-      <tbody id="printTableBody"></tbody>
-    </table>
-  </div>
+<!-- HEADER -->
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
+<div class="prescription-header text-center">
 
-  <script>
-    const db = firebase.firestore();
-    let currentUser = null;
+<div class="row align-items-center">
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const hospitalId = urlParams.get("hospitalId");
-    const appointmentId = urlParams.get("appointmentId");
-    const name = urlParams.get("name");
-    const mobile = urlParams.get("mobile");
-    const date = urlParams.get("date");
+<div class="col-md-2 text-start">
+<!-- <img src="clinic-logo.png" class="logo"> -->
+</div>
 
-    document.getElementById("hospitalId").value = hospitalId || "";
-    document.getElementById("appointmentId").value = appointmentId || "";
-    document.getElementById("displayName").textContent = name || "";
-    document.getElementById("displayMobile").textContent = mobile || "";
-    document.getElementById("displayDate").textContent = date ? new Date(date).toLocaleDateString() : "";
+<div class="col-md-8">
 
-    firebase.auth().onAuthStateChanged(async (user) => {
-      if (user) {
-        currentUser = user;
-        await checkExistingPrescription();
-      } else {
-        window.location.href = "login.html";
-      }
-    });
+<h4 class="doctor-name" id="doctorName"></h4>
 
-    async function checkExistingPrescription() {
-      const snap = await db.collection("hospitals").doc(hospitalId)
-        .collection("appointments").doc(appointmentId)
-        .collection("prescriptions").orderBy("createdAt", "desc").limit(1).get();
+<div>
+<span id="doctorEducation"></span> |
+<span class="badge bg-primary" id="doctorSpecialty"></span>
+</div>
 
-      if (!snap.empty) {
-        const d = snap.docs[0].data();
-        document.getElementById("disease").value = d.disease || "";
-        document.getElementById("bp").value = d.bp || "";
-        document.getElementById("sugar").value = d.sugar || "";
-        document.getElementById("pulse").value = d.pulse || "";
-        document.getElementById("temp").value = d.temp || "";
+<div id="hospitalName" class="fw-semibold"></div>
+<div id="hospitalAddress"></div>
 
-        document.querySelector("#medTable tbody").innerHTML = "";
-        d.medicines.forEach(addRow);
+Email: <span id="hospitalEmail"></span>
 
-        document.getElementById("clearBtn").style.display = "inline-block";
-      } else {
-        addRow();
-      }
-    }
+</div>
 
-    function addRow(data = {}) {
-      const row = document.createElement("tr");
-      const timeValues = (data.time || "0-0-0").split("-");
-      row.innerHTML = `
-        <td>
-          <select class="form-select" required>
-            ${["Tablet", "Syrup", "Cream", "Injection"].map(t =>
-              `<option value="${t}" ${data.type === t ? "selected" : ""}>${t}</option>`).join("")}
-          </select>
-        </td>
-        <td><input class="form-control" type="text" value="${data.name || ""}" required /></td>
-        <td><input class="form-control" type="text" value="${data.dosage || ""}" required /></td>
-        <td class="text-center">
-          <div class="d-flex justify-content-around">
-            <label><input type="checkbox" ${timeValues[0] === "1" ? "checked" : ""}/> M</label>
-            <label><input type="checkbox" ${timeValues[1] === "1" ? "checked" : ""}/> A</label>
-            <label><input type="checkbox" ${timeValues[2] === "1" ? "checked" : ""}/> N</label>
-          </div>
-        </td>
-        <td class="text-center"><input type="checkbox" ${data.beforeFood ? "checked" : ""} /></td>
-        <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">🗑</button></td>
-      `;
-      document.querySelector("#medTable tbody").appendChild(row);
-    }
 
-    function clearForm() {
-      document.getElementById("prescriptionForm").reset();
-      document.querySelector("#medTable tbody").innerHTML = "";
-      document.getElementById("clearBtn").style.display = "none";
-      addRow();
-    }
 
-    document.getElementById("prescriptionForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+</div>
 
-      const meds = [];
-      let valid = true;
-      const rows = document.querySelectorAll("#medTable tbody tr");
+</div>
 
-      rows.forEach(tr => {
-        const type = tr.querySelector("select").value;
-        const name = tr.querySelectorAll("input[type=text]")[0].value.trim();
-        const dosage = tr.querySelectorAll("input[type=text]")[1].value.trim();
-        const timeCheckboxes = tr.querySelectorAll("td:nth-child(4) input[type=checkbox]");
-        const time = [...timeCheckboxes].map(cb => cb.checked ? "1" : "0").join("-");
-        const beforeFood = tr.querySelector("td:nth-child(5) input[type=checkbox]").checked;
+<!-- PATIENT -->
 
-        if (!type || !name || !dosage) valid = false;
+<div class="card p-3 mb-3">
 
-        meds.push({ type, name, dosage, time, beforeFood });
-      });
+<h5>Patient</h5>
 
-      const disease = document.getElementById("disease").value.trim();
-      if (!valid || meds.length === 0 || !disease) {
-        alert("Please fill all fields correctly.");
-        return;
-      }
+<div class="row g-3">
 
-      const data = {
-        disease,
-        bp: document.getElementById("bp").value.trim(),
-        sugar: document.getElementById("sugar").value.trim(),
-        pulse: document.getElementById("pulse").value.trim(),
-        temp: document.getElementById("temp").value.trim(),
-        medicines: meds,
-        patientName: name,
-        patientMobile: mobile,
-        appointmentDate: date,
-        providerId: currentUser.uid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
+<div class="col-md-4">
+<label>Name</label>
+<div class="form-control bg-light" id="displayName"></div>
+</div>
 
-      try {
-        await db.collection("hospitals").doc(hospitalId)
-          .collection("appointments").doc(appointmentId)
-          .collection("prescriptions").add(data);
+<div class="col-md-2">
+<label>Age</label>
+<input class="form-control" id="age">
+</div>
 
-        await db.collection("hospitals").doc(hospitalId)
-          .collection("appointments").doc(appointmentId)
-          .update({ status: "completed" });
+<div class="col-md-2">
+<label>Gender</label>
+<select class="form-select" id="gender">
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+</div>
 
-        // Populate print view
-        // document.getElementById("pName").textContent = name;
-        // document.getElementById("pMobile").textContent = mobile;
-        // document.getElementById("pDate").textContent = new Date(date).toLocaleDateString();
-        document.getElementById("pDisease").textContent = disease;
-        document.getElementById("pBp").textContent = data.bp;
-        document.getElementById("pSugar").textContent = data.sugar;
-        document.getElementById("pPulse").textContent = data.pulse;
-        document.getElementById("pTemp").textContent = data.temp;
+<div class="col-md-2">
+<label>Mobile</label>
+<div class="form-control bg-light" id="displayMobile"></div>
+</div>
 
-        const tbody = document.getElementById("printTableBody");
-        tbody.innerHTML = "";
-        meds.forEach(med => {
-          tbody.innerHTML += `
-            <tr>
-              <td>${med.type}</td>
-              <td>${med.name}</td>
-              <td>${med.dosage}</td>
-              <td>${med.time}</td>
-              <td>${med.beforeFood ? "Yes" : "No"}</td>
-            </tr>
-          `;
-        });
+<div class="col-md-2">
+<label>Date</label>
+<div class="form-control bg-light" id="displayDate"></div>
+</div>
 
-        // Show success and print
-        document.getElementById("successAlert").style.display = "block";
-        setTimeout(() => {
-          document.getElementById("successAlert").style.display = "none";
-        }, 2000);
+</div>
 
-        setTimeout(() => {
-          window.print();
-          window.location.href = "provider-dashboard.html";
-        }, 700);
+</div>
 
-      } catch (err) {
-        alert("Error saving prescription: " + err.message);
-      }
-    });
-  </script>
+<!-- FORM -->
+
+<form id="prescriptionForm" class="card p-4 mb-3 no-print">
+
+<h5>Diagnosis</h5>
+
+<div class="input-group mb-3">
+<input class="form-control" id="disease">
+<button type="button" class="btn btn-outline-secondary" onclick="startVoice()">🎤</button>
+</div>
+
+<h5>Vitals</h5>
+
+<div class="row g-2 mb-3">
+
+<div class="col-md-2"><input class="form-control" id="bp" placeholder="BP"></div>
+<div class="col-md-2"><input class="form-control" id="sugar" placeholder="Sugar"></div>
+<div class="col-md-2"><input class="form-control" id="pulse" placeholder="Pulse"></div>
+<div class="col-md-2"><input class="form-control" id="temp" placeholder="Temp"></div>
+<div class="col-md-2"><input class="form-control" id="weight" placeholder="Weight"></div>
+<div class="col-md-2"><input class="form-control" id="spo2" placeholder="SpO2"></div>
+
+</div>
+
+<h5>Medicines</h5>
+
+<table class="table table-bordered" id="medTable">
+
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Dosage</th>
+<th>M-A-N</th>
+<th>Before Food</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+<button type="button" class="btn btn-outline-primary mb-3" onclick="addRow()">+ Add Medicine</button>
+
+<h5>Advice</h5>
+
+<textarea class="form-control mb-3" id="advice"></textarea>
+
+<h5>Follow Up</h5>
+
+<input type="date" class="form-control mb-3" id="followupDate">
+
+</form>
+
+<!-- PRINT VIEW -->
+
+<div id="printView">
+
+<div class="print-header">
+
+<div>
+<h3 id="pHospital"></h3>
+<div id="pAddress"></div>
+Email: <span id="pEmail"></span>
+</div>
+
+<div>
+<strong id="pDoctor"></strong><br>
+<span id="pEdu"></span><br>
+<span id="pSpec"></span>
+</div>
+
+</div>
+
+<hr>
+
+<div class="print-patient">
+
+<div><strong>Patient:</strong> <span id="pName"></span></div>
+<div><strong>Age:</strong> <span id="pAge"></span></div>
+<div><strong>Gender:</strong> <span id="pGender"></span></div>
+<div><strong>Date:</strong> <span id="pDate"></span></div>
+
+</div>
+<hr>
+<div class="print-vitals">
+
+<strong>Vitals:</strong><br>
+
+BP: <span id="pBP"></span> |
+Sugar: <span id="pSugar"></span> |
+Pulse: <span id="pPulse"></span> |
+Temp: <span id="pTemp"></span> |
+Weight: <span id="pWeight"></span> |
+SpO2: <span id="pSpo2"></span>
+
+</div>
+
+
+<hr>
+
+<div class="rx-section">
+
+<h4>℞</h4>
+
+<div id="printMedicineList"></div>
+
+</div>
+
+<p><strong>Advice:</strong> <span id="pAdvice"></span></p>
+
+<p><strong>Follow Up:</strong> <span id="pFollow"></span></p>
+
+<div class="signature">
+<div class="sign-line"></div>
+Doctor Signature
+</div>
+
+</div>
+
+<!-- FIREBASE -->
+
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+<script src="firebase-config.js"></script>
+
+<script>
+
+const db=firebase.firestore();
+
+const urlParams=new URLSearchParams(window.location.search);
+
+const hospitalId=urlParams.get("hospitalId");
+const appointmentId=urlParams.get("appointmentId");
+
+const name=urlParams.get("name");
+const mobile=urlParams.get("mobile");
+const date=urlParams.get("date");
+const ageParam=urlParams.get("age");
+const genderParam=urlParams.get("gender");
+
+age.value = ageParam || "";
+gender.value = genderParam || "Male";
+displayName.textContent=name;
+displayMobile.textContent=mobile;
+displayDate.textContent=new Date(date).toLocaleDateString();
+
+async function loadHospital(){
+  try{
+    const doc = await db.collection("hospitals").doc(hospitalId).get();
+    const d = doc.data();
+
+    doctorName.textContent=d.doctorName;
+    doctorEducation.textContent=d.doctorEducation;
+    doctorSpecialty.textContent=d.doctorSpecialty;
+
+    hospitalName.textContent=d.hospitalName;
+    hospitalAddress.textContent=d.hospitalAddress;
+    hospitalEmail.textContent=d.hospitalEmail;
+
+  }catch(err){
+    console.error("Hospital load error:", err);
+  }
+}
+async function loadPreviousPrescription(){
+
+const snap = await db.collectionGroup("prescriptions")
+.where("mobile","==",mobile)
+.where("patientName","==",name)   // ✅ added filter
+.orderBy("createdAt","desc")
+.limit(1)
+.get();
+
+if(snap.empty){
+console.log("No previous prescription");
+return;
+}
+
+const old = snap.docs[0].data();
+
+/* Fill fields */
+
+bp.value = old.bp || "";
+sugar.value = old.sugar || "";
+pulse.value = old.pulse || "";
+temp.value = old.temp || "";
+weight.value = old.weight || "";
+spo2.value = old.spo2 || "";
+
+disease.value = old.disease || "";
+advice.value = old.advice || "";
+followupDate.value = old.followupDate || "";
+
+age.value = old.age || age.value;
+gender.value = old.gender || gender.value;
+
+/* Clear table */
+
+medTable.querySelector("tbody").innerHTML="";
+
+/* Load medicines */
+
+(old.medicines || []).forEach(m=>{
+
+addRow();
+
+const row = medTable.querySelector("tbody tr:last-child");
+
+row.querySelector("select").value = m.type;
+
+row.querySelectorAll("input")[0].value = m.name;
+row.querySelectorAll("input")[1].value = m.dosage;
+
+const times = (m.time || "0-0-0").split("-");
+
+const checkboxes = row.querySelectorAll("td:nth-child(4) input");
+
+checkboxes[0].checked = times[0] === "1";
+checkboxes[1].checked = times[1] === "1";
+checkboxes[2].checked = times[2] === "1";
+
+row.querySelector("td:nth-child(5) input").checked = m.beforeFood;
+
+});
+
+}
+firebase.auth().onAuthStateChanged(async user=>{
+if(!user) location.href="login.html";
+
+await loadHospital();
+await loadPreviousPrescription();
+
+});
+function translateType(type){
+
+const lang = document.getElementById("language").value;
+
+if(lang === "mr"){
+
+const map = {
+"Tablet":"गोळी",
+"Syrup":"सिरप",
+"Cream":"मलम",
+"Injection":"इंजेक्शन"
+};
+
+return map[type] || type;
+
+}
+
+return type;
+
+}
+function translateTiming(time, beforeFood){
+
+const lang = document.getElementById("language").value;
+
+if(lang === "en"){
+
+const map = {
+"1-0-0":"Morning",
+"0-1-0":"Afternoon",
+"0-0-1":"Night",
+"1-1-1":"Morning-Afternoon-Night",
+"1-0-1":"Morning-Night"
+};
+
+let timing = map[time] || time;
+
+return `Timing: ${timing} ${beforeFood ? "(Before Food)" : "(After Food)"}`;
+}
+
+if(lang === "mr"){
+
+const map = {
+"1-0-0":"सकाळी",
+"0-1-0":"दुपारी",
+"0-0-1":"रात्री",
+"1-1-1":"सकाळ-दुपार-रात्र",
+"1-0-1":"सकाळ-रात्र"
+};
+
+let timing = map[time] || time;
+
+let food = beforeFood ? "जेवणाआधी" : "जेवणानंतर";
+
+return `वेळ: ${timing} (${food})`;
+
+}
+
+}
+function addRow(){
+
+const row=document.createElement("tr");
+
+row.innerHTML=`
+<td>
+<select class="form-select">
+<option>Tablet</option>
+<option>Syrup</option>
+<option>Cream</option>
+<option>Injection</option>
+</select>
+</td>
+
+<td class="autocomplete">
+<input class="form-control med-name">
+<div class="autocomplete-list"></div>
+</td>
+
+<td>
+<input class="form-control">
+</td>
+
+<td class="text-center">
+<input type="checkbox"> M
+<input type="checkbox"> A
+<input type="checkbox"> N
+</td>
+
+<td class="text-center">
+<input type="checkbox">
+</td>
+
+<td>
+<button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button>
+</td>
+`;
+
+medTable.querySelector("tbody").appendChild(row);
+
+const input=row.querySelector(".med-name");
+const list=row.querySelector(".autocomplete-list");
+
+input.addEventListener("input",async()=>{
+
+const q=input.value;
+
+if(q.length<2) return;
+
+list.innerHTML="Loading...";
+
+try{
+
+const res=await fetch(`https://api.fda.gov/drug/label.json?search=openfda.brand_name:${q}&limit=5`);
+const data=await res.json();
+
+list.innerHTML="";
+
+data.results.forEach(m=>{
+
+const name=m.openfda.brand_name?m.openfda.brand_name[0]:"Medicine";
+
+const item=document.createElement("div");
+item.className="autocomplete-item";
+item.textContent=name;
+
+item.onclick=()=>{
+input.value=name;
+list.innerHTML="";
+};
+
+list.appendChild(item);
+
+});
+
+}catch{
+
+list.innerHTML="<div class='autocomplete-item'>No Result</div>";
+
+}
+
+});
+
+}
+
+addRow();
+
+function startVoice(){
+
+const rec=new webkitSpeechRecognition();
+
+rec.onresult=(e)=>{
+disease.value=e.results[0][0].transcript;
+};
+
+rec.start();
+
+}
+
+function clearForm(){
+
+prescriptionForm.reset();
+
+medTable.querySelector("tbody").innerHTML="";
+
+addRow();
+
+}
+
+prescriptionForm.addEventListener("submit",async(e)=>{
+
+e.preventDefault();
+
+const meds=[];
+
+document.querySelectorAll("#medTable tbody tr").forEach(tr=>{
+
+const type = tr.querySelector("select").value;
+
+const name = tr.querySelectorAll("input")[0].value;
+
+const dosage = tr.querySelectorAll("input")[1].value;
+
+const times = [...tr.querySelectorAll("td:nth-child(4) input")]
+.map(cb => cb.checked ? "1":"0")
+.join("-");
+
+const beforeFood = tr.querySelector("td:nth-child(5) input").checked;
+
+meds.push({
+type,
+name,
+dosage,
+time:times,
+beforeFood
+});
+
+});
+const data={
+
+disease:disease.value,
+advice:advice.value,
+followupDate:followupDate.value,
+medicines:meds,
+
+// ✅ ADD THESE
+bp: bp.value,
+sugar: sugar.value,
+pulse: pulse.value,
+temp: temp.value,
+weight: weight.value,
+spo2: spo2.value,
+
+patientName:name,
+mobile:mobile,
+age:age.value,
+gender:gender.value,
+
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+};
+
+await db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.doc(appointmentId)
+.collection("prescriptions")
+.add(data);
+
+/* PRINT DATA */
+pBP.textContent = bp.value;
+pSugar.textContent = sugar.value;
+pPulse.textContent = pulse.value;
+pTemp.textContent = temp.value;
+pWeight.textContent = weight.value;
+pSpo2.textContent = spo2.value;
+pHospital.textContent=hospitalName.textContent;
+pAddress.textContent=hospitalAddress.textContent;
+pEmail.textContent=hospitalEmail.textContent;
+
+pDoctor.textContent=doctorName.textContent;
+pEdu.textContent=doctorEducation.textContent;
+pSpec.textContent=doctorSpecialty.textContent;
+
+pName.textContent=name;
+pAge.textContent=age.value;
+pGender.textContent=gender.value;
+pDate.textContent=displayDate.textContent;
+
+pAdvice.textContent=advice.value;
+pFollow.textContent=followupDate.value;
+
+printMedicineList.innerHTML="";
+meds.forEach((m,i)=>{
+
+printMedicineList.innerHTML += `
+<div style="margin-bottom:10px">
+
+<b>${i+1}. ${translateType(m.type)} ${m.name}</b><br>
+
+Dose: ${m.dosage}<br>
+
+${translateTiming(m.time, m.beforeFood)}
+
+</div>
+`;
+
+});setTimeout(()=>{
+
+window.print();
+location.href="provider-dashboard.html";
+
+},700);
+
+});
+
+</script>
+
 </body>
 </html>

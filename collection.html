@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<title>Money Collection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+background:#f6f8fb;
+font-family:Segoe UI;
+}
+
+/* HEADER */
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+flex-wrap:wrap;
+gap:10px;
+}
+
+/* CARDS */
+
+.card-box{
+border-radius:10px;
+padding:18px;
+color:white;
+text-align:center;
+}
+
+.total{background:#007bff;}
+.cash{background:#28a745;}
+.upi{background:#6f42c1;}
+.card{background:#fd7e14;}
+
+/* TABLE */
+
+.table th{
+background:#007bff;
+color:white;
+text-align:center;
+}
+
+.table td{
+text-align:center;
+}
+
+/* CHART */
+
+.chart-box{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.08);
+}
+
+/* MOBILE IMPROVEMENTS */
+
+@media(max-width:768px){
+
+h4{
+font-size:18px;
+}
+
+.card-box{
+padding:12px;
+}
+
+.card-box h3{
+font-size:20px;
+}
+
+.chart-box{
+padding:15px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body class="container py-3">
+
+<!-- HEADER -->
+
+<div class="header">
+
+<h4 class="mb-0">Collection Dashboard</h4>
+
+<button class="btn btn-secondary btn-sm" onclick="history.back()">
+⬅ Back
+</button>
+
+</div>
+
+
+<!-- FILTER -->
+
+<div class="mb-4 text-center">
+
+<div class="btn-group">
+
+<button class="btn btn-primary btn-sm" onclick="loadCollection('daily')">
+Daily
+</button>
+
+<button class="btn btn-outline-primary btn-sm" onclick="loadCollection('weekly')">
+Weekly
+</button>
+
+<button class="btn btn-outline-primary btn-sm" onclick="loadCollection('monthly')">
+Monthly
+</button>
+
+</div>
+
+</div>
+
+
+<!-- SUMMARY CARDS -->
+
+<div class="row g-3 mb-4">
+
+<div class="col-6 col-md-3">
+<div class="card-box total">
+<h6>Total</h6>
+<h3 id="totalAmount">0</h3>
+</div>
+</div>
+
+<div class="col-6 col-md-3">
+<div class="card-box cash">
+<h6>Cash</h6>
+<h3 id="cashAmount">0</h3>
+</div>
+</div>
+
+<div class="col-6 col-md-3">
+<div class="card-box upi">
+<h6>UPI</h6>
+<h3 id="upiAmount">0</h3>
+</div>
+</div>
+
+<div class="col-6 col-md-3">
+<div class="card-box card">
+<h6>Card</h6>
+<h3 id="cardAmount">0</h3>
+</div>
+</div>
+
+</div>
+
+
+<div class="row g-4">
+
+<!-- PAYMENT PIE CHART -->
+
+<div class="col-12 col-md-4">
+
+<div class="chart-box">
+
+<h6 class="text-center mb-3">
+Payment Distribution
+</h6>
+
+<canvas id="paymentChart"></canvas>
+
+</div>
+
+</div>
+
+
+<!-- COLLECTION TABLE -->
+
+<div class="col-12 col-md-8">
+
+<div class="table-responsive">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+<th>Patient</th>
+<th>Amount</th>
+<th>Mode</th>
+</tr>
+
+</thead>
+
+<tbody id="collectionBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- TREND CHART -->
+
+<div class="chart-box mt-4">
+
+<h6 class="text-center mb-3">
+Revenue Trend
+</h6>
+
+<canvas id="trendChart"></canvas>
+
+</div>
+
+
+
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig={
+apiKey:"AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
+authDomain:"hospital-management-syst-580a4.firebaseapp.com",
+projectId:"hospital-management-syst-580a4",
+storageBucket:"hospital-management-syst-580a4.appspot.com",
+messagingSenderId:"318105236795",
+appId:"1:318105236795:web:548c0e174553eeed67f31e"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+let hospitalId;
+let paymentChart;
+let trendChart;
+
+
+
+/* LOGIN */
+
+auth.onAuthStateChanged(async user=>{
+
+if(!user){
+location.href="login.html";
+return;
+}
+
+const userDoc=await db.collection("users").doc(user.uid).get();
+const userData=userDoc.data();
+
+let hospitalSnap;
+
+/* PROVIDER */
+
+if(userData.role==="provider"){
+
+hospitalSnap=await db.collection("hospitals")
+.where("providerEmail","==",user.email)
+.limit(1)
+.get();
+
+}
+
+/* PHYSICIAN */
+
+else{
+
+hospitalSnap=await db.collection("hospitals")
+.where("providerEmail","==",userData.linkedProviderEmail)
+.limit(1)
+.get();
+
+}
+
+if(hospitalSnap.empty){
+alert("Hospital not found");
+return;
+}
+
+hospitalId=hospitalSnap.docs[0].id;
+
+loadCollection("daily");
+
+});
+
+
+
+/* LOAD COLLECTION */
+
+function loadCollection(period="daily"){
+
+let startDate=new Date();
+let endDate=new Date();
+
+if(period==="daily"){
+
+startDate.setHours(0,0,0,0);
+
+endDate=new Date(startDate);
+endDate.setDate(startDate.getDate()+1);
+
+}
+
+if(period==="weekly"){
+
+startDate.setDate(startDate.getDate()-7);
+startDate.setHours(0,0,0,0);
+
+}
+
+if(period==="monthly"){
+
+startDate.setDate(startDate.getDate()-30);
+startDate.setHours(0,0,0,0);
+
+}
+
+db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.where("date",">=",startDate)
+.where("date","<",endDate)
+.get()
+.then(snapshot=>renderCollection(snapshot.docs));
+
+}
+
+
+
+/* RENDER COLLECTION */
+
+function renderCollection(docs){
+
+let total=0;
+let cash=0;
+let upi=0;
+let card=0;
+
+const body=document.getElementById("collectionBody");
+body.innerHTML="";
+
+docs.forEach(doc=>{
+
+const d=doc.data();
+
+if(d.feePaid){
+
+const amount=parseFloat(d.fee||0);
+
+total+=amount;
+
+if(d.paymentMode==="Cash") cash+=amount;
+if(d.paymentMode==="UPI") upi+=amount;
+if(d.paymentMode==="Card") card+=amount;
+
+body.innerHTML+=`
+<tr>
+<td>${d.patientName}</td>
+<td>₹ ${amount}</td>
+<td>${d.paymentMode}</td>
+</tr>
+`;
+
+}
+
+});
+
+document.getElementById("totalAmount").innerText="₹ "+total;
+document.getElementById("cashAmount").innerText="₹ "+cash;
+document.getElementById("upiAmount").innerText="₹ "+upi;
+document.getElementById("cardAmount").innerText="₹ "+card;
+
+renderPaymentChart(cash,upi,card);
+renderTrendChart(docs);
+
+}
+
+
+
+/* PIE CHART */
+
+function renderPaymentChart(cash,upi,card){
+
+const ctx=document.getElementById("paymentChart");
+
+if(paymentChart) paymentChart.destroy();
+
+paymentChart=new Chart(ctx,{
+type:"doughnut",
+data:{
+labels:["Cash","UPI","Card"],
+datasets:[{
+data:[cash,upi,card],
+backgroundColor:["#28a745","#6f42c1","#fd7e14"]
+}]
+},
+options:{
+plugins:{legend:{position:"bottom"}}
+}
+});
+
+}
+
+
+
+/* TREND CHART */
+
+function renderTrendChart(docs){
+
+let dailyMap={};
+
+docs.forEach(doc=>{
+
+const d=doc.data();
+
+if(d.feePaid){
+
+let date=d.date.toDate().toISOString().split("T")[0];
+
+if(!dailyMap[date]) dailyMap[date]=0;
+
+dailyMap[date]+=parseFloat(d.fee||0);
+
+}
+
+});
+
+const labels=Object.keys(dailyMap);
+const values=Object.values(dailyMap);
+
+const ctx=document.getElementById("trendChart");
+
+if(trendChart) trendChart.destroy();
+
+trendChart=new Chart(ctx,{
+type:"line",
+data:{
+labels:labels,
+datasets:[{
+label:"Revenue",
+data:values,
+borderColor:"#007bff",
+backgroundColor:"rgba(0,123,255,0.2)",
+fill:true
+}]
+},
+options:{
+plugins:{legend:{display:false}}
+}
+});
+
+}
+
+</script>
+
+</body>
+</html>

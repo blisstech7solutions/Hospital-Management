@@ -1,458 +1,966 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Physician Partner Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-   body {
-  background-color: #f8f9fa;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+<meta charset="UTF-8" />
+<title>Physician Partner Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2966/2966483.png">
+
+<style>
+
+body{
+background:#f8f9fa;
+font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+color:#333;
 }
 
-h2 {
-  font-weight: bold;
-  color: #007bff;
-  margin-bottom: 1.5rem;
+h5{
+font-weight:600;
 }
 
-#addNewBtn {
-  background: linear-gradient(to right, #00c6ff, #0072ff);
-  border: none;
-  color: white;
-  font-weight: bold;
-  transition: transform 0.2s ease-in-out;
-  float: right;
+#addNewBtn{
+background:linear-gradient(to right,#00c6ff,#0072ff);
+border:none;
+color:white;
+font-weight:bold;
 }
 
-#addNewBtn:hover {
-  transform: scale(1.05);
+.table{
+background:white;
+border-radius:.5rem;
+overflow:hidden;
+box-shadow:0 0 10px rgba(0,0,0,.08);
 }
 
-.btn-group {
-  margin-bottom: 1rem;
+.table th{
+background:#007bff;
+color:white;
+text-align:center;
 }
 
-.table {
-  background-color: white;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+.table td{
+text-align:center;
+vertical-align:middle;
 }
 
-.table th {
-  background-color: #007bff;
-  color: white;
-  font-weight: 500;
-  text-align: center;
+.badge-pending{background:#ffc107;color:black;}
+.badge-completed{background:#28a745;}
+.badge-cancelled{background:#dc3545;}
+
+.modal-content{
+border-radius:1rem;
+}
+.appointment-card{
+background:white;
+border-radius:12px;
+padding:14px;
+margin-bottom:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+font-size:14px;
 }
 
-.table td {
-  vertical-align: middle;
-  text-align: center;
+.row-line{
+display:flex;
+justify-content:space-between;
+margin-bottom:6px;
 }
 
-.badge-pending {
-  background-color: #ffc107;
-  color: #212529;
+.row-line .label{
+font-weight:500;
+color:#555;
 }
 
-.badge-completed {
-  background-color: #28a745;
+.row-line .value{
+font-weight:600;
 }
 
-.badge-cancelled {
-  background-color: #dc3545;
+.card-actions{
+display:flex;
+gap:6px;
+margin-top:10px;
 }
 
-.modal-content {
-  border-radius: 1rem;
-  box-shadow: 0 0 20px rgba(0, 123, 255, 0.2);
+.card-actions button{
+flex:1;
 }
 
-.form-control,
-.form-select {
-  border-radius: 0.375rem;
+@media (max-width:768px){
+
+.table{
+font-size:13px;
 }
 
-.btn-primary {
-  background-color: #007bff;
-  border: none;
-  transition: background-color 0.3s;
+th,td{
+white-space:nowrap;
 }
 
-.btn-primary:hover {
-  background-color: #0056b3;
+.btn{
+padding:4px 8px;
+font-size:12px;
 }
 
-.btn-danger {
-  background-color: #dc3545;
-  border: none;
+}
+.appointments-toolbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+gap:10px;
 }
 
-.btn-danger:hover {
-  background-color: #b52a37;
+.left-section{
+display:flex;
+align-items:center;
+gap:20px;
+flex-wrap:wrap;
 }
 
-#searchPatient {
-  max-width: 400px;
-  margin-bottom: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #ced4da;
+.title{
+margin:0;
+font-weight:600;
 }
 
-#toast-container {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 1055;
+.date-filter{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:wrap;
 }
 
-.btn-close {
-  outline: none;
+.date-filter input{
+max-width:180px;
 }
 
-tr:hover {
-  background-color: #f1f9ff;
+.right-section{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
 }
-  </style>
+
+@media (max-width:768px){
+
+.appointments-toolbar{
+flex-direction:column;
+align-items:flex-start;
+}
+
+.date-filter{
+width:100%;
+}
+
+.right-section{
+width:100%;
+}
+
+.right-section button{
+flex:1;
+}
+
+}
+.date-filter input{
+width:160px;
+}
+
+</style>
+
 </head>
+
 <body class="container py-4">
-  <!-- <h2>Physician Partner Dashboard</h2> -->
-<div class="text-end mb-3">
-  <button class="btn btn-outline-secondary btn-sm" onclick="logout()">Logout</button>
+<div class="dashboard-header mb-3"
+style="display:flex;justify-content:space-between;align-items:center;background:white;padding:10px 15px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.08);flex-wrap:wrap;gap:10px;">
+
+  <div>
+    <strong>Hospital:</strong>
+    <span id="headerHospitalName">N/A</span><br>
+
+    <strong>Email:</strong>
+    <span id="headerHospitalEmail">N/A</span>
+  </div>
+
+  <div class="text-end">
+    <strong>Doctor:</strong>
+    <span id="headerDoctorName">N/A</span><br>
+
+    <strong>Specialty:</strong>
+    <span id="headerDoctorSpecialty">N/A</span>
+  </div>
+
+</div>
+<div class="appointments-toolbar">
+
+<div class="left-section">
+
+<h5 class="title">Today's Appointments</h5>
+
+<div class="date-filter">
+
+<input type="date" id="filterDate" class="form-control">
+
+<button class="btn btn-outline-primary" onclick="filterByDate()">
+Filter
+</button>
+
+<button class="btn btn-outline-secondary" onclick="loadTodayAppointments()">
+Today
+</button>
+
 </div>
 
-  <div class="mb-3 d-flex justify-content-between align-items-center">
-    <input type="text" id="searchPatient" class="form-control" placeholder="Search by mobile or name" />
-    <button class="btn" id="addNewBtn" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">+ Add Appointment</button>
-  </div>
-
-  <div class="btn-group mb-3" role="group">
-    <!-- <input type="date" id="searchDate" class="form-control" onchange="searchByDate()" /> -->
-
-    <button class="btn btn-outline-primary" onclick="filterStatus('All')">All</button>
-    <button class="btn btn-outline-warning" onclick="filterStatus('Pending')">Pending</button>
-    <button class="btn btn-outline-success" onclick="filterStatus('completed')">Completed</button>
-    <!-- <button class="btn btn-outline-danger" onclick="filterStatus('Cancelled')">Cancelled</button> -->
-  </div>
-
-  <table class="table table-bordered" id="appointmentTable">
-    <thead>
-      <tr>
-        <th>PRN</th>
-        <th>Patient Name</th>
-        <th>Mobile</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Fee Paid</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="appointmentBody"></tbody>
-  </table>
-
-  <!-- Add/Edit Appointment Modal -->
-  <div class="modal fade" id="addAppointmentModal" tabindex="-1" aria-labelledby="addAppointmentLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="addAppointmentForm" class="modal-content" novalidate>
-        <div class="modal-header">
-          <h5 class="modal-title" id="addAppointmentLabel">Add New Appointment</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="patientName" class="form-label">Patient Name</label>
-            <input type="text" id="patientName" class="form-control" required />
-          </div>
-          <div class="mb-3">
-            <label for="mobile" class="form-label">Mobile</label>
-            <input type="tel" id="mobile" class="form-control" required pattern="[0-9]{10}" title="Enter 10 digit mobile number" />
-          </div>
-          <div class="mb-3">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" id="date" class="form-control" required />
-          </div>
-          <div class="mb-3">
-            <label for="status" class="form-label">Status</label>
-            <select id="status" class="form-select" required>
-              <option value="Pending" selected>Pending</option>
-              <option value="completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
-          <div class="mb-3 form-check">
-            <input type="checkbox" id="feePaid" class="form-check-input" />
-            <label for="feePaid" class="form-check-label">Fee Paid</label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" id="saveBtn">Save Appointment</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Toasts -->
-  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
-
-  <!-- Firebase & Bootstrap -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
-    authDomain: "hospital-management-syst-580a4.firebaseapp.com",
-    projectId: "hospital-management-syst-580a4",
-    storageBucket: "hospital-management-syst-580a4.appspot.com",
-    messagingSenderId: "318105236795",
-    appId: "1:318105236795:web:548c0e174553eeed67f31e"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  let currentUser, hospitalId, linkedProviderEmail;
-  let editMode = false, editDocId = null;
-
-  const appointmentBody = document.getElementById("appointmentBody");
-  const searchInput = document.getElementById("searchPatient");
-  const addAppointmentForm = document.getElementById("addAppointmentForm");
-  const addAppointmentModal = new bootstrap.Modal(document.getElementById("addAppointmentModal"));
-  const modalTitle = document.getElementById("addAppointmentLabel");
-  const saveBtn = document.getElementById("saveBtn");
-  const patientName = document.getElementById("patientName");
-  const mobile = document.getElementById("mobile");
-  const date = document.getElementById("date");
-  const status = document.getElementById("status");
-  const feePaid = document.getElementById("feePaid");
-  const addNewBtn = document.getElementById("addNewBtn");
-
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) return location.href = "login.html";
-    currentUser = user;
-
-    const userDoc = await db.collection("users").doc(user.uid).get();
-    linkedProviderEmail = userDoc.data()?.linkedProviderEmail;
-
-    if (!linkedProviderEmail) {
-      alert("Linked provider not found.");
-      return;
-    }
-
-    const hospitalSnap = await db.collection("hospitals")
-      .where("providerEmail", "==", linkedProviderEmail).limit(1).get();
-
-    if (!hospitalSnap.empty) {
-      hospitalId = hospitalSnap.docs[0].id;
-      db.collection("hospitals").doc(hospitalId).collection("appointments")
-        .orderBy("date", "desc")
-        .onSnapshot(snapshot => renderAppointments(snapshot.docs));
-    } else {
-      alert("No hospital linked to this provider.");
-    }
-  });
-
-  function renderAppointments(docs) {
-    appointmentBody.innerHTML = "";
-    // Sort by status: Pending first, then Completed, then Cancelled
-    const sorted = docs.sort((a, b) => {
-      const order = { "Pending": 1, "completed": 2, "Cancelled": 3 };
-      return (order[a.data().status] || 4) - (order[b.data().status] || 4);
-    });
-    sorted.forEach(doc => {
-      const d = doc.data();
-      // $("#Hospname").text(d.hospitalName || "N/A");
-      let statusClass = d.status === "completed" ? "badge-completed" : d.status === "Cancelled" ? "badge-cancelled" : "badge-pending";
-      appointmentBody.innerHTML += `
-        <tr data-status="${d.status}">
-          <td>${d.mobile}-${d.patientName}</td>
-          <td>${d.patientName}</td>
-          <td>${d.mobile}</td>
-          <td>${d.date?.toDate().toLocaleDateString() || "N/A"}</td>
-          <td><span class="badge ${statusClass}">${d.status || "Pending"}</span></td>
-          <td>${d.feePaid ? "Yes" : "No"}</td>
-          <td>
-            <button class="btn btn-sm btn-primary" onclick="editAppointment('${doc.id}')">Edit</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteAppointment('${doc.id}')">Delete</button>
-          </td>
-        </tr>`;
-    });
-  }
-// function renderAppointments(docs) {
-//   appointmentBody.innerHTML = "";
-
-//   // Get today's date (with time set to 00:00:00)
-//   const today = new Date();
-//   today.setHours(0, 0, 0, 0); // Reset time to midnight
-
-//   // Sort by status: Pending first, then Completed, then Cancelled
-//   const sorted = docs.sort((a, b) => {
-//     const order = { "Pending": 1, "completed": 2, "Cancelled": 3 };
-//     return (order[a.data().status] || 4) - (order[b.data().status] || 4);
-//   });
-
-//   sorted.forEach(doc => {
-//     const d = doc.data();
-
-//     // Check if the appointment date is today
-//     const appointmentDate = d.date?.toDate();
-//     const isToday = appointmentDate && (
-//       appointmentDate.getFullYear() === today.getFullYear() &&
-//       appointmentDate.getMonth() === today.getMonth() &&
-//       appointmentDate.getDate() === today.getDate()
-//     );
-
-//     if (isToday) {
-//       let statusClass =
-//         d.status === "completed" ? "badge-completed" :
-//         d.status === "Cancelled" ? "badge-cancelled" :
-//         "badge-pending";
-
-//       appointmentBody.innerHTML += `
-//         <tr data-status="${d.status}">
-//           <td>${d.mobile}-${d.patientName}</td>
-//           <td>${d.patientName}</td>
-//           <td>${d.mobile}</td>
-//           <td>${appointmentDate.toLocaleDateString() || "N/A"}</td>
-//           <td><span class="badge ${statusClass}">${d.status || "Pending"}</span></td>
-//           <td>${d.feePaid ? "Yes" : "No"}</td>
-//           <td>
-//             <button class="btn btn-sm btn-primary" onclick="editAppointment('${doc.id}')">Edit</button>
-//             <button class="btn btn-sm btn-danger" onclick="deleteAppointment('${doc.id}')">Delete</button>
-//           </td>
-//         </tr>`;
-//     }
-//   });
-// }
-
-  function filterStatus(status) {
-    document.querySelectorAll("#appointmentBody tr").forEach(row => {
-      const s = row.getAttribute("data-status");
-      row.style.display = status === "All" || s === status ? "" : "none";
-    });
-  }
-
-  searchInput.addEventListener("input", () => {
-    const val = searchInput.value.toLowerCase();
-    document.querySelectorAll("#appointmentBody tr").forEach(row => {
-      const name = row.cells[1].textContent.toLowerCase();
-      const mob = row.cells[2].textContent.toLowerCase();
-      row.style.display = (name.includes(val) || mob.includes(val)) ? "" : "none";
-    });
-  });
-
-  addAppointmentForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!addAppointmentForm.checkValidity()) {
-      addAppointmentForm.classList.add("was-validated");
-      return;
-    }
-
-    const data = {
-      patientName: patientName.value.trim(),
-      mobile: mobile.value.trim(),
-      date: new Date(date.value),
-      status: status.value,
-      feePaid: feePaid.checked,
-      physicianPartnerEmail: currentUser.email,
-      hospitalId,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    try {
-      if (editMode && editDocId) {
-        await db.collection("hospitals").doc(hospitalId).collection("appointments").doc(editDocId).update(data);
-        alert("Updated!");
-      } else {
-        await db.collection("hospitals").doc(hospitalId).collection("appointments").add(data);
-        alert("Appointment Added!");
-      }
-      resetForm();
-      addAppointmentModal.hide();
-    } catch (err) {
-      alert("Error: " + err.message);
-    }
-  });
-
-  async function editAppointment(id) {
-    const doc = await db.collection("hospitals").doc(hospitalId).collection("appointments").doc(id).get();
-    if (!doc.exists) return alert("Not found");
-    const d = doc.data();
-
-    patientName.value = d.patientName;
-    mobile.value = d.mobile;
-    date.value = d.date.toDate().toISOString().split('T')[0];
-    status.value = d.status;
-    feePaid.checked = d.feePaid;
-
-    editMode = true;
-    editDocId = id;
-    modalTitle.textContent = "Edit Appointment";
-    saveBtn.textContent = "Update";
-    addAppointmentModal.show();
-  }
-
-  async function deleteAppointment(id) {
-    if (confirm("Delete?")) {
-      await db.collection("hospitals").doc(hospitalId).collection("appointments").doc(id).delete();
-      alert("Deleted.");
-    }
-  }
-
-  function resetForm() {
-    addAppointmentForm.reset();
-    editMode = false;
-    editDocId = null;
-    modalTitle.textContent = "Add Appointment";
-    saveBtn.textContent = "Save";
-  }
-
-  addNewBtn.addEventListener("click", resetForm);
-  window.editAppointment = editAppointment;
-  window.deleteAppointment = deleteAppointment;
-</script>
-<!-- Chat Widget (Physician talking to Provider) -->
-<button id="chatToggle" class="btn btn-info position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">💬 Chat</button>
-
-<div id="chatBox" class="position-fixed border rounded p-2 bg-white shadow d-none" 
-     data-receiver="provider" data-role="physician"
-     style="width: 300px; height: 400px; bottom: 70px; right: 20px; z-index: 1000; display: flex; flex-direction: column;">
-  <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-    <strong>Chat with <span id="chatTargetName">...</span></strong>
-    <span id="chatTargetStatus" class="badge bg-secondary">Offline</span>
-    <button onclick="chatBox.classList.add('d-none')" class="btn btn-sm btn-close"></button>
-  </div>
-  <div id="chatMessages" class="flex-grow-1 overflow-auto mb-2" style="font-size: 0.9rem;"></div>
-  <input type="file" id="chatFile" class="form-control mb-1" accept=".jpg,.png,.pdf" />
-  <div class="input-group">
-    <input type="text" id="chatInput" class="form-control" placeholder="Type a message...">
-    <button id="sendChatBtn" class="btn btn-primary">Send</button>
-  </div>
 </div>
+
+<div class="right-section">
+
+<button class="btn btn-success"
+onclick="window.location.href='collection.html'">
+💰 Money Collection
+</button>
+
+<button class="btn"
+id="addNewBtn"
+data-bs-toggle="modal"
+data-bs-target="#addAppointmentModal">
++ Add Appointment
+</button>
+
+<button class="btn btn-outline-secondary"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</div>
+
+<div class="search-bar-container mt-3 mb-3">
+  <input type="text"
+id="searchPatient"
+class="form-control"
+placeholder="Search by mobile or name">
+</div>
+
+<div class="table-responsive d-none d-md-block">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+<th>PRN</th>
+<th>Patient Name</th>
+<th>Mobile</th>
+<th>Age</th>
+<th>Gender</th>
+<th>Status</th>
+<th>Fee</th>
+<th>Paid</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="appointmentBody"></tbody>
+
+</table>
+
+</div>
+
+<!-- MOBILE CARD VIEW -->
+
+<div id="appointmentCards" class="d-md-none"></div>
+
+<!-- ADD EDIT MODAL -->
+
+<div class="modal fade"
+id="addAppointmentModal"
+tabindex="-1">
+
+<div class="modal-dialog modal-dialog-centered">
+
+<form id="addAppointmentForm"
+class="modal-content"
+novalidate>
+
+<div class="modal-header">
+
+<h5 class="modal-title"
+id="addAppointmentLabel">
+Add Appointment
+</h5>
+
+<button type="button"
+class="btn-close"
+data-bs-dismiss="modal"> </button>
+
+</div>
+
+<div class="modal-body">
+
+<div class="row g-3">
+
+<div class="col-md-6">
+<label class="form-label">Patient Name</label>
+<input id="patientName"
+class="form-control"
+required>
+</div>
+
+<div class="col-md-6">
+<label class="form-label">Mobile</label>
+<input id="mobile"
+class="form-control"
+required
+pattern="[0-9]{10}">
+</div>
+<div class="col-md-6">
+<label class="form-label">Appointment Date</label>
+<input id="appointmentDate" type="date" class="form-control">
+</div>
+<div class="col-md-3">
+<label class="form-label">Age</label>
+<input id="age"
+type="number"
+class="form-control">
+</div>
+
+<div class="col-md-3">
+<label class="form-label">Gender</label>
+<select id="gender"
+class="form-select">
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+</div>
+
+<div class="col-md-6">
+<label class="form-label">Symptoms</label>
+<textarea id="symptoms"
+class="form-control"></textarea>
+</div>
+
+<div class="col-md-4">
+<label class="form-label">Consultation Fee</label>
+<input id="fee"
+type="number"
+class="form-control">
+</div>
+
+<div class="col-md-4">
+<label class="form-label">Payment Mode</label>
+<select id="paymentMode"
+class="form-select">
+<option>Cash</option>
+<option>UPI</option>
+<option>Card</option>
+</select>
+</div>
+
+<div class="col-md-4">
+<label class="form-label">Status</label>
+<select id="status"
+class="form-select">
+<option value="Pending">Pending</option>
+<option value="completed">Completed</option>
+<option value="Cancelled">Cancelled</option>
+</select>
+</div>
+
+<div class="col-12">
+<div class="form-check mt-2">
+<input type="checkbox"
+id="feePaid"
+class="form-check-input">
+<label class="form-check-label">
+Fee Paid
+</label>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="modal-footer">
+
+<button type="submit"
+class="btn btn-primary"
+id="saveBtn">
+Save Appointment </button>
+
+<button type="button"
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+Cancel </button>
+
+</div>
+
+</form>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-  function logout() {
-  auth.signOut().then(() => {
-    alert("Logged out successfully.");
-    window.location.href = "login.html";
-  }).catch((error) => {
-    console.error("Logout Error:", error);
-    alert("Error during logout. Check console.");
-  });
+
+const firebaseConfig={
+apiKey:"AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
+authDomain:"hospital-management-syst-580a4.firebaseapp.com",
+projectId:"hospital-management-syst-580a4",
+storageBucket:"hospital-management-syst-580a4.appspot.com",
+messagingSenderId:"318105236795",
+appId:"1:318105236795:web:548c0e174553eeed67f31e"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+let hospitalId,currentUser,linkedProviderEmail;
+let editMode=false,editDocId=null;
+
+const appointmentBody=document.getElementById("appointmentBody");
+const searchInput=document.getElementById("searchPatient");
+const addAppointmentForm=document.getElementById("addAppointmentForm");
+
+const patientName=document.getElementById("patientName");
+const mobile=document.getElementById("mobile");
+const age=document.getElementById("age");
+const gender=document.getElementById("gender");
+const symptoms=document.getElementById("symptoms");
+const fee=document.getElementById("fee");
+const paymentMode=document.getElementById("paymentMode");
+const status=document.getElementById("status");
+const feePaid=document.getElementById("feePaid");
+
+const addAppointmentModal = new bootstrap.Modal(
+document.getElementById("addAppointmentModal")
+);
+document.getElementById("addAppointmentModal")
+.addEventListener("shown.bs.modal", () => {
+
+const today = new Date();
+const istDate = new Date(
+today.getFullYear(),
+today.getMonth(),
+today.getDate()
+);
+
+document.getElementById("appointmentDate").value =
+istDate.toLocaleDateString("en-CA");
+
+});
+
+
+
+auth.onAuthStateChanged(async user=>{
+
+if(!user){
+location.href="login.html";
+return;
+}
+
+currentUser=user;
+
+const userDoc=await db.collection("users")
+.doc(user.uid)
+.get();
+
+linkedProviderEmail=userDoc.data()?.linkedProviderEmail;
+const today = new Date();
+
+const istDate = new Date(
+today.getFullYear(),
+today.getMonth(),
+today.getDate()
+);
+
+document.getElementById("filterDate").value =
+istDate.toLocaleDateString("en-CA");
+const hospitalSnap=await db.collection("hospitals")
+.where("providerEmail","==",linkedProviderEmail)
+.limit(1)
+.get();
+
+if(!hospitalSnap.empty){
+
+hospitalId = hospitalSnap.docs[0].id;   // ⭐ THIS WAS MISSING
+window.hospitalId = hospitalId;
+const hospitalData = hospitalSnap.docs[0].data();
+
+document.getElementById("headerHospitalName").textContent =
+hospitalData.hospitalName || "N/A";
+
+document.getElementById("headerHospitalEmail").textContent =
+hospitalData.hospitalEmail || "N/A";
+
+document.getElementById("headerDoctorName").textContent =
+hospitalData.doctorName || "N/A";
+
+document.getElementById("headerDoctorSpecialty").textContent =
+hospitalData.doctorSpecialty || "N/A";
+
+loadTodayAppointments();
+
+}
+else{
+alert("No hospital linked.");
+}
+
+});
+
+function filterByDate(){
+
+const selectedDate =
+document.getElementById("filterDate").value;
+
+if(!selectedDate) return;
+
+const start = new Date(selectedDate);
+start.setHours(0,0,0,0);
+
+const end = new Date(start);
+end.setDate(start.getDate()+1);
+
+const startTS = firebase.firestore.Timestamp.fromDate(start);
+const endTS = firebase.firestore.Timestamp.fromDate(end);
+
+db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.where("date", ">=", startTS)
+.where("date", "<", endTS)
+.get()
+.then(snapshot => {
+renderAppointments(snapshot.docs);
+});
+
+}
+function loadTodayAppointments(){
+
+const today = new Date();
+today.setHours(0,0,0,0);
+
+const tomorrow = new Date(today);
+tomorrow.setDate(today.getDate()+1);
+
+const start = firebase.firestore.Timestamp.fromDate(today);
+const end = firebase.firestore.Timestamp.fromDate(tomorrow);
+
+db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.where("date", ">=", start)
+.where("date", "<", end)
+.onSnapshot(snapshot => renderAppointments(snapshot.docs));
+
+}
+
+
+
+function renderAppointments(docs){
+
+appointmentBody.innerHTML="";
+appointmentCards.innerHTML="";
+if(docs.length === 0){
+
+appointmentBody.innerHTML = `
+<tr>
+<td colspan="9" class="text-center text-muted py-4">
+No appointments found for selected date
+</td>
+</tr>
+`;
+
+appointmentCards.innerHTML = `
+<div class="text-center text-muted mt-4">
+No appointments found for selected date
+</div>
+`;
+
+return;
+}
+docs.forEach(doc=>{
+
+const d=doc.data();
+
+let statusClass =
+d.status==="completed"
+?"badge-completed"
+:"badge-pending";
+
+/* -------- TABLE ROW -------- */
+
+appointmentBody.innerHTML+=`
+
+<tr data-status="${d.status}">
+
+<td>${d.prn||""}</td>
+
+<td>${d.patientName}</td>
+
+<td>${d.mobile}</td>
+
+<td>${d.age||""}</td>
+
+<td>${d.gender||""}</td>
+
+<td>
+<span class="badge ${statusClass}">
+${d.status}
+</span>
+</td>
+
+<td>${d.fee||""}</td>
+
+<td>${d.feePaid?"Yes":"No"}</td>
+
+<td>
+
+<button class="btn btn-sm btn-primary"
+onclick="editAppointment('${doc.id}')">
+Edit
+</button>
+
+<button class="btn btn-sm btn-danger"
+onclick="deleteAppointment('${doc.id}')">
+Delete
+</button>
+
+</td>
+
+</tr>
+`;
+
+/* -------- MOBILE CARD -------- */
+
+appointmentCards.innerHTML+=`
+
+<div class="appointment-card">
+
+<div class="row-line">
+<span class="label">PRN</span>
+<span class="value">${d.prn||""}</span>
+</div>
+
+<div class="row-line">
+<span class="label">Patient</span>
+<span class="value">${d.patientName}</span>
+</div>
+
+<div class="row-line">
+<span class="label">Mobile</span>
+<span>${d.mobile}</span>
+</div>
+
+<div class="row-line">
+<span class="label">Age / Gender</span>
+<span>${d.age||""} / ${d.gender||""}</span>
+</div>
+
+<div class="row-line">
+<span class="label">Status</span>
+<span class="badge ${statusClass}">
+${d.status}
+</span>
+</div>
+
+<div class="row-line">
+<span class="label">Fee</span>
+<span>₹${d.fee||""}</span>
+</div>
+
+<div class="row-line">
+<span class="label">Fee Paid</span>
+<span>${d.feePaid?"Yes":"No"}</span>
+</div>
+
+<div class="card-actions">
+
+<button class="btn btn-sm btn-primary"
+onclick="editAppointment('${doc.id}')">
+Edit
+</button>
+
+<button class="btn btn-sm btn-danger"
+onclick="deleteAppointment('${doc.id}')">
+Delete
+</button>
+
+</div>
+
+</div>
+`;
+
+});
+
+}
+
+searchInput.addEventListener("input",()=>{
+
+const val=searchInput.value.toLowerCase();
+
+document.querySelectorAll("#appointmentBody tr")
+.forEach(row=>{
+
+const name=row.cells[1].textContent.toLowerCase();
+const mob=row.cells[2].textContent.toLowerCase();
+
+row.style.display=
+(name.includes(val)||mob.includes(val))
+?"":"none";
+
+});
+
+});
+
+async function generatePRN() {
+
+const today = new Date();
+
+const dateKey =
+today.getFullYear().toString().slice(-2) +
+String(today.getMonth() + 1).padStart(2, '0') +
+String(today.getDate()).padStart(2, '0');
+
+// Example: 240317
+
+const ref = db.collection("hospitals")
+.doc(hospitalId)
+.collection("meta")
+.doc("prn_" + dateKey);
+
+return await db.runTransaction(async (t) => {
+
+const doc = await t.get(ref);
+
+let count = 1;
+
+if (doc.exists) {
+count = doc.data().count + 1;
+}
+
+t.set(ref, { count }, { merge: true });
+
+return `PRN${dateKey}${String(count).padStart(3,'0')}`;
+
+// Example: PRN240317001
+
+});
+
+}
+
+addAppointmentForm.addEventListener("submit",
+async e=>{
+
+e.preventDefault();
+if (!patientName.value.trim()) {
+alert("Patient name required");
+return;
+}
+
+if (!/^[0-9]{10}$/.test(mobile.value.trim())) {
+alert("Enter valid 10 digit mobile");
+return;
+}
+const selectedDateValue =
+document.getElementById("appointmentDate").value;
+
+const selectedDate = selectedDateValue
+? new Date(selectedDateValue)
+: new Date();
+const istDate = new Date(
+selectedDate.getFullYear(),
+selectedDate.getMonth(),
+selectedDate.getDate(),
+12, 0, 0
+);
+const data={
+
+patientName:patientName.value.trim(),
+mobile:mobile.value.trim(),
+age:age.value,
+gender:gender.value,
+symptoms:symptoms.value,
+fee: Number(fee.value) || 0,
+paymentMode:paymentMode.value,
+status:status.value,
+feePaid:feePaid.checked,
+
+
+date: firebase.firestore.Timestamp.fromDate(istDate)
+};
+
+try{
+
+if(editMode){
+
+await db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.doc(editDocId)
+.update(data);
+
+}else{
+
+
+const prn = await generatePRN();
+await db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.add({
+...data,
+prn: prn
+});
+
+}
+
+resetForm();
+addAppointmentModal.hide();
+
+}catch(err){
+
+alert(err.message);
+
+}
+
+});
+
+
+
+async function editAppointment(id){
+
+const doc=await db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.doc(id)
+.get();
+
+const d=doc.data();
+
+patientName.value=d.patientName;
+mobile.value=d.mobile;
+age.value=d.age;
+gender.value=d.gender;
+symptoms.value=d.symptoms;
+fee.value=d.fee;
+paymentMode.value=d.paymentMode;
+status.value=d.status;
+feePaid.checked=d.feePaid;
+
+editMode=true;
+editDocId=id;
+
+addAppointmentModal.show();
+
+}
+
+
+async function deleteAppointment(id){
+
+if(confirm("Delete?")){
+
+await db.collection("hospitals")
+.doc(hospitalId)
+.collection("appointments")
+.doc(id)
+.delete();
+
+}
+
+}
+
+
+
+function resetForm(){
+
+addAppointmentForm.reset();
+editMode=false;
+editDocId=null;
+
+}
+
+
+
+function logout(){
+
+auth.signOut().then(()=>{
+window.location.href="login.html";
+});
+
 }
 
 </script>
-<!-- Notification Sound -->
-<audio id="ping" src="/IMAGES/ping.mp3" preload="auto"></audio>
+
+<!-- Chat Widget (kept same) -->
+
+<button id="chatToggle"
+class="btn btn-info position-fixed"
+style="bottom:20px;right:20px;z-index:1000;">
+💬 Chat </button>
+
+<div id="chatBox"
+class="position-fixed border rounded p-2 bg-white shadow d-none"
+data-receiver="provider"
+data-role="physician"
+style="width:300px;height:400px;bottom:70px;right:20px;z-index:1000;display:flex;flex-direction:column;">
+
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+
+<strong>
+Chat with
+<span id="chatTargetName">...</span>
+</strong>
+
+<span id="chatTargetStatus"
+class="badge bg-secondary">
+Offline </span>
+
+<button onclick="chatBox.classList.add('d-none')"
+class="btn btn-sm btn-close"> </button>
+
+</div>
+
+<div id="chatMessages"
+class="flex-grow-1 overflow-auto mb-2"
+style="font-size:0.9rem;">
+</div>
+
+<input type="file"
+id="chatFile"
+class="form-control mb-1"
+accept=".jpg,.png,.pdf">
+
+<div class="input-group">
+
+<input type="text"
+id="chatInput"
+class="form-control"
+placeholder="Type a message...">
+
+<button id="sendChatBtn"
+class="btn btn-primary">
+Send </button>
+
+</div>
+
+</div>
+
+<audio id="ping"
+src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"
+preload="auto"></audio>
 
 <script src="/chat.js"></script>
-
 
 </body>
 </html>
