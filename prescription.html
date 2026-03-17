@@ -69,30 +69,6 @@ margin-bottom:15px;
 flex-wrap:wrap;
 }
 
-/* MED AUTOCOMPLETE */
-
-.autocomplete{
-position:relative;
-}
-
-.autocomplete-list{
-position:absolute;
-background:white;
-border:1px solid #ddd;
-width:100%;
-z-index:10;
-max-height:200px;
-overflow:auto;
-}
-
-.autocomplete-item{
-padding:6px;
-cursor:pointer;
-}
-
-.autocomplete-item:hover{
-background:#f1f1f1;
-}
 .print-vitals{
 margin-top:10px;
 font-size:14px;
@@ -231,6 +207,28 @@ margin-bottom:5px;
 .med-remove{
   text-align:right;
 }
+.autocomplete{
+  position:relative;
+}
+
+.autocomplete-list{
+  position:absolute;
+  background:white;
+  border:1px solid #ddd;
+  width:100%;
+  z-index:1000;
+  max-height:200px;
+  overflow:auto;
+}
+
+.autocomplete-item{
+  padding:6px;
+  cursor:pointer;
+}
+
+.autocomplete-item:hover{
+  background:#f1f1f1;
+}
 </style>
 </head>
 
@@ -358,7 +356,7 @@ Email: <span id="hospitalEmail"></span>
 + Add Medicine
 </button>
 
-<button type="button" class="btn btn-outline-primary mb-3" onclick="addRow()">+ Add Medicine</button>
+<!-- <button type="button" class="btn btn-outline-primary mb-3" onclick="addRow()">+ Add Medicine</button> -->
 
 <h5>Advice</h5>
 
@@ -458,7 +456,25 @@ const mobile=urlParams.get("mobile");
 const date=urlParams.get("date");
 const ageParam=urlParams.get("age");
 const genderParam=urlParams.get("gender");
+let medicineList = [];
 
+async function loadMedicinesList(){
+  const snap = await db.collection("hospitals")
+    .doc(hospitalId)
+    .collection("medicines")
+    .get();
+
+  medicineList = [];
+
+  snap.forEach(doc=>{
+    const m = doc.data();
+    medicineList.push({
+      full: `${m.name} ${m.strength}`,
+      name: m.name,
+      strength: m.strength
+    });
+  });
+}
 age.value = ageParam || "";
 gender.value = genderParam || "Male";
 displayName.textContent=name;
@@ -534,8 +550,7 @@ const checks = card.querySelectorAll(".med-checks input");
 select.value = m.type || "Tablet";
 
 inputs[0].value = m.name || "";
-inputs[1].value = m.dosage || "";
-
+inputs[1].value = m.duration || "";
 /* Timing */
 
 const times = (m.time || "0-0-0").split("-");
@@ -555,6 +570,7 @@ firebase.auth().onAuthStateChanged(async user=>{
 if(!user) location.href="login.html";
 
 await loadHospital();
+await loadMedicinesList();
 await loadPreviousPrescription();
 
 });
@@ -632,14 +648,16 @@ card.innerHTML = `
 </div>
 
 <div class="med-row autocomplete">
-<input class="form-control med-name" placeholder="Medicine name">
-<div class="autocomplete-list"></div>
+  <input class="form-control med-name" placeholder="Type medicine (do, eco, cal...)">
+  <div class="autocomplete-list"></div>
 </div>
 
 <div class="med-row">
-<input class="form-control" placeholder="Dosage">
+  <div class="input-group">
+    <input type="number" class="form-control duration" placeholder="5">
+    <span class="input-group-text">days</span>
+  </div>
 </div>
-
 <div class="med-checks">
 <label><input type="checkbox"> M</label>
 <label><input type="checkbox"> A</label>
@@ -656,44 +674,55 @@ card.innerHTML = `
 `;
 
 document.getElementById("medContainer").appendChild(card);
-
-/* autocomplete same logic */
 const input = card.querySelector(".med-name");
 const list = card.querySelector(".autocomplete-list");
 
-input.addEventListener("input", async () => {
-const q = input.value;
-if(q.length < 2) return;
+input.addEventListener("input", () => {
 
-list.innerHTML = "Loading...";
+  const q = input.value.toLowerCase();
 
-try{
-const res = await fetch(`https://api.fda.gov/drug/label.json?search=openfda.brand_name:${q}&limit=5`);
-const data = await res.json();
+  if(q.length < 1){
+    list.innerHTML = "";
+    return;
+  }
 
-list.innerHTML = "";
+  const results = medicineList
+    .filter(m => m.full.toLowerCase().includes(q))
+    .slice(0, 8);
 
-data.results.forEach(m=>{
-const name = m.openfda.brand_name ? m.openfda.brand_name[0] : "Medicine";
+  list.innerHTML = "";
 
-const item = document.createElement("div");
-item.className = "autocomplete-item";
-item.textContent = name;
+  results.forEach(m => {
 
-item.onclick = () => {
-input.value = name;
-list.innerHTML = "";
-};
+    const item = document.createElement("div");
+    item.className = "autocomplete-item";
+    item.textContent = m.full;
 
-list.appendChild(item);
+    item.onclick = () => {
+      input.value = m.full;
+      list.innerHTML = "";
+    };
+
+    list.appendChild(item);
+
+  });
+
 });
-}catch{
-list.innerHTML = "<div>No result</div>";
 }
-});
-}
+
 if(document.getElementById("medContainer").children.length === 0){
   addRow();
+}
+function translateDuration(duration){
+  const lang = document.getElementById("language").value;
+
+  if(!duration) return "";
+
+  if(lang === "mr"){
+    return `${duration} दिवस`;
+  }
+
+  return `${duration} days`;
 }
 function startVoice(){
 
@@ -706,7 +735,15 @@ disease.value=e.results[0][0].transcript;
 rec.start();
 
 }
+function getDurationLabel(){
+  const lang = document.getElementById("language").value;
 
+  if(lang === "mr"){
+    return "कालावधी";
+  }
+
+  return "Duration";
+}
 function clearForm(){
 
 prescriptionForm.reset();
@@ -729,8 +766,7 @@ const type = card.querySelector("select").value;
 const inputs = card.querySelectorAll("input");
 
 const name = inputs[0].value;
-const dosage = inputs[1].value;
-
+const duration = inputs[1].value;
 const checks = card.querySelectorAll(".med-checks input");
 
 const time = [
@@ -744,7 +780,7 @@ const beforeFood = checks[3].checked;
 meds.push({
 type,
 name,
-dosage,
+duration,
 time,
 beforeFood
 });
@@ -810,8 +846,7 @@ printMedicineList.innerHTML += `
 
 <b>${i+1}. ${translateType(m.type)} ${m.name}</b><br>
 
-Dose: ${m.dosage}<br>
-
+${getDurationLabel()}: ${translateDuration(m.duration)}<br>
 ${translateTiming(m.time, m.beforeFood)}
 
 </div>
