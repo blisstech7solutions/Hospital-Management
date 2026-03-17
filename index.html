@@ -1,337 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Care Connect – Smart Hospital Management</title>
-  
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" />
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f8fafc;
-      padding-bottom: 60px;
-      color: #333;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Care Connect</title>
 
-    /* Sticky Logo Bar */
-    .logo-bar {
-      background: #fff;
-      padding: 15px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      position: sticky;
-      top: 0;
-      z-index: 1100;
-    }
-    .logo-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 25px;
-      margin-bottom: 8px;
-    }
-    .logo-img {
-      height: 60px;
-      object-fit: contain;
-      transition: transform 0.3s ease;
-    }
-    .logo-img:hover {
-      transform: scale(1.05);
-    }
-    .site-name {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #185a9d;
-      letter-spacing: 1px;
-    }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    /* Hero Section */
-    .hero {
-      background: linear-gradient(135deg, #43cea2, #185a9d);
-      color: white;
-      padding: 90px 20px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero h1 {
-      font-size: 3.2rem;
-      font-weight: bold;
-      animation: fadeInDown 1s ease-in-out;
-    }
-    .hero p {
-      animation: fadeInUp 1s ease-in-out;
-    }
-    .hero .btn {
-      margin-top: 20px;
-      background: white;
-      color: #185a9d;
-      font-weight: 600;
-      border-radius: 30px;
-      padding: 10px 25px;
-      transition: all 0.3s ease;
-    }
-    .hero .btn:hover {
-      background: #f1f1f1;
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:#0a0a0a;
+  color:#fff;
+}
 
-    /* Modern Image Slider */
-    .screenshot-slider {
-      padding: 50px 0;
-      background: #fff;
-      text-align: center;
-    }
-    .slider-medium-wrapper {
-      position: relative;
-      width: 90%;
-      max-width: 900px;
-      margin: auto;
-      overflow: hidden;
-      border-radius: 15px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-    }
-    .slider-medium {
-      display: flex;
-      transition: transform 0.6s ease-in-out;
-    }
-    .slider-item {
-      min-width: 100%;
-      position: relative;
-    }
-    .slider-item img {
-      width: 100%;
-      height: 450px;
-      object-fit: cover;
-      animation: fadeInScale 0.6s ease-in-out;
-    }
-    .slider-caption {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-      color: white;
-      padding: 15px;
-      font-size: 1.1rem;
-      font-weight: 500;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    @keyframes fadeInScale {
-      from { opacity: 0; transform: scale(0.96); }
-      to { opacity: 1; transform: scale(1); }
-    }
+/* 🔥 HEADER */
+.top-navbar{
+  position:sticky;
+  top:0;
+  z-index:1100;
+  background:rgba(0,0,0,0.9);
+  backdrop-filter: blur(8px);
+  padding:10px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
-    /* Slider Navigation */
-    .nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.7);
-      color: #185a9d;
-      border: none;
-      font-size: 2rem;
-      padding: 8px 14px;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 10;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .nav:hover {
-      background: rgba(255, 255, 255, 0.9);
-      transform: scale(1.1);
-    }
-    .prev { left: 10px; }
-    .next { right: 10px; }
+.nav-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-    /* Role Section */
-    .roles-section .card {
-      border: none;
-      border-radius: 15px;
-      background: white;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .roles-section .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
+.nav-logo{
+  height:28px;
+}
 
-    /* Offer Section */
-    .offer-section {
-      background: linear-gradient(145deg, #e0f7fa, #ffffff);
-      padding: 60px 20px;
-      text-align: center;
-      border-top: 5px solid #00c853;
-      border-bottom: 5px solid #00c853;
-    }
-    .offer-badge {
-      font-size: 1.3rem;
-      background: #00c853;
-      color: white;
-      padding: 8px 20px;
-      border-radius: 50px;
-      display: inline-block;
-      animation: bounce 1.5s infinite;
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-    .emoji {
-      font-size: 2.5rem;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
+.brand{
+  font-size:13px;
+  line-height:1.1;
+}
 
-    /* Footer */
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: #185a9d;
-      color: white;
-      text-align: center;
-      padding: 10px 0;
-      z-index: 1000;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-      font-size: 0.9rem;
-    }
+.brand span:first-child{
+  color:#ff3c6f;
+  font-weight:bold;
+}
 
-    @media (max-width: 768px) {
-      .slider-item img {
-        height: 300px;
-      }
-    }
-  </style>
+.brand span:last-child{
+  color:#00e5ff;
+  font-size:11px;
+}
+
+.login-btn{
+  background:linear-gradient(90deg,#ff3c6f,#00e5ff);
+  border:none;
+  padding:6px 16px;
+  border-radius:20px;
+  color:white;
+  font-size:13px;
+}
+
+/* 🔥 HERO */
+.hero{
+  height:95vh;
+  background:url('https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+  position:relative;
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.7),rgba(0,0,0,0.95));
+}
+
+.hero-content{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  z-index:2;
+  width:90%;
+  max-width:800px;
+}
+
+/* 🔥 PREMIUM TEXT */
+.hero h1{
+  font-size:3rem;
+  font-weight:800;
+  color:#ff3c6f;
+  line-height:1.2;
+}
+
+.hero p{
+  margin-top:15px;
+  font-size:1.2rem;
+  color:#ddd;
+}
+
+/* 🔥 CTA */
+.hero-btn{
+  margin-top:25px;
+  padding:12px 30px;
+  border-radius:30px;
+  background:linear-gradient(90deg,#ff3c6f,#00e5ff);
+  border:none;
+  color:white;
+  font-weight:600;
+  transition:0.3s;
+}
+
+.hero-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 25px rgba(255,60,111,0.4);
+}
+
+/* 🔥 GLASS FEATURE BOX */
+.glass-box{
+  margin-top:30px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-radius:15px;
+  padding:20px;
+  display:flex;
+  justify-content:space-around;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.glass-box div{
+  font-size:14px;
+  color:#ccc;
+}
+
+/* 🔥 SECTION */
+.features{
+  padding:60px 20px;
+  background:#0a0a0a;
+}
+
+.feature-card{
+  background:#111;
+  border-radius:15px;
+  padding:20px;
+  transition:0.3s;
+}
+
+.feature-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 30px rgba(0,229,255,0.2);
+}
+
+/* 🔥 FOOTER */
+footer{
+  text-align:center;
+  padding:12px;
+  background:#000;
+  font-size:13px;
+}
+
+/* 🔥 MOBILE */
+@media(max-width:768px){
+
+.hero{
+  height:75vh;
+}
+
+.hero h1{
+  font-size:1.8rem;
+}
+
+.hero p{
+  font-size:0.95rem;
+}
+
+.nav-logo{
+  height:20px;
+}
+
+.brand{
+  display:none;
+}
+
+.hero-btn{
+  width:100%;
+}
+
+.glass-box{
+  flex-direction:column;
+  text-align:center;
+}
+
+}
+</style>
 </head>
+
 <body>
 
-  <!-- Sticky Logo Header Section -->
-  <div class="logo-bar">
-    <div class="logo-container">
-      <img src="/CARE CONNECT.png" alt="Logo 1" class="logo-img">
-      <img src="/BLISS TECH7.png" alt="Logo 2" class="logo-img">
-    </div>
-    <div class="site-name"><b style="color: red;">CARE CONNECT</b> by <b style="color: chocolate;">BLISS TECH7 SOLUTIONS</b> </div>
-  </div>
-
-  <!-- Hero Section -->
-  <div class="hero animate__animated animate__fadeIn">
-    <h1>🏥 Welcome to Care Connect</h1>
-    <p class="lead">Streamlining hospital operations for providers, partners & patients.</p>
-    <button class="btn btn-light btn-lg" onclick="location.href='login.html'">Login / Signup</button>
-  </div>
-
-  <!-- Screenshot Slider -->
-  <section class="screenshot-slider">
-    <div class="slider-medium-wrapper" id="sliderWrapper">
-      <div class="slider-medium" id="slider">
-        <div class="slider-item">
-          <img src="/Signup.png" alt="Signup Screenshot" />
-          <div class="slider-caption">User Signup Page</div>
-        </div>
-        <div class="slider-item">
-          <img src="/Login.png" alt="Login Screenshot" />
-          <div class="slider-caption">Secure Login Interface</div>
-        </div>
-        <div class="slider-item">
-          <img src="/phypartner.png" alt="Partner Dashboard" />
-          <div class="slider-caption">Physician Partner Dashboard</div>
-        </div>
-        <div class="slider-item">
-          <img src="/Providerdash.png" alt="Provider Dashboard" />
-          <div class="slider-caption">Provider Dashboard</div>
-        </div>
-        <div class="slider-item">
-          <img src="/Addappt.png" alt="Add Appointment Screenshot" />
-          <div class="slider-caption">Add Appointment Interface</div>
-        </div>
-        <div class="slider-item">
-          <img src="/pres.png" alt="Prescription Screenshot" />
-          <div class="slider-caption">Prescription Interface</div>
-        </div>
-        <div class="slider-item">
-          <img src="/chat.png" alt="Chat Screenshot" />
-          <div class="slider-caption">Chat Interface</div>
-        </div>
-      </div>
-      <button class="nav prev" onclick="prevSlide()">❮</button>
-      <button class="nav next" onclick="nextSlide()">❯</button>
-    </div>
-  </section>
-
-  <!-- Role-based Features -->
-  <div class="container roles-section py-5">
-    <h2 class="section-title text-center">🔍 Role-wise Features</h2>
-    <div class="row g-4">
-      <div class="col-md-6">
-        <div class="card p-4">
-          <h4>👨‍⚕️ Provider (Doctor)</h4>
-          <ul class="mt-3 text-start">
-            <li>Manage hospital profile</li>
-            <li>View & print prescriptions 🖨️</li>
-            <li>Auto-sync appointments with partners</li>
-            <li>Load latest patient visits & history</li>
-            <li>Real-time chat and patient tracking</li>
-          </ul>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card p-4">
-          <h4>🤝 Physician Partner</h4>
-          <ul class="mt-3 text-start">
-            <li>Schedule & manage appointments</li>
-            <li>Load last prescription in one click</li>
-            <li>Prepare data for provider review</li>
-            <li>Collaborate with doctors seamlessly</li>
-            <li>Assist in generating new prescriptions</li>
-          </ul>
-        </div>
-      </div>
+<!-- 🔥 HEADER -->
+<div class="top-navbar">
+  <div class="nav-left">
+    <img src="/CARE CONNECT.png" class="nav-logo">
+    <img src="/BLISS TECH7.png" class="nav-logo">
+    <div class="brand">
+      <span>CARE CONNECT</span><br>
+      <span>BLISS TECH7 SOLUTIONS</span>
     </div>
   </div>
 
-  <!-- Subscription Offer Section -->
-  <!-- <div class="offer-section">
-    <div class="emoji">🎉</div>
-    <h2 class="mt-3">Limited Time Offer</h2>
-    <p class="lead">Take full advantage of Care Connect with our <strong>Annual Plan</strong></p>
-    <div class="offer-badge mt-2">Only ₹10,000/year</div>
-    <p class="mt-3">Save big compared to ₹1000/month – includes full access to appointments, prescription printing, sync features, and more!</p>
-    <button class="btn btn-success btn-lg mt-3" onclick="location.href='login.html'">Start Now</button>
-  </div> -->
+  <button class="login-btn" onclick="location.href='login.html'">
+    Login / Sign Up
+  </button>
+</div>
 
-  <!-- Footer -->
-  <footer>
-    <p>&copy; 2025 Care Connect by Bliss Tech 7 Solutions | All rights reserved</p>
-  </footer>
+<!-- 🔥 HERO -->
+<div class="hero">
+  <div class="hero-content">
 
-  <!-- Slider Script -->
-  <script>
-    let currentIndex = 0;
-    const slider = document.getElementById("slider");
-    const totalItems = slider.children.length;
+    <h1>Smart Healthcare. Seamless Management.</h1>
 
-    function showSlide(index) {
-      if (index >= totalItems) currentIndex = 0;
-      else if (index < 0) currentIndex = totalItems - 1;
-      else currentIndex = index;
-      slider.style.transform = `translateX(-${currentIndex * 100}%)`;
-    }
-    function nextSlide() { showSlide(currentIndex + 1); }
-    function prevSlide() { showSlide(currentIndex - 1); }
-    setInterval(nextSlide, 4000);
-  </script>
+    <p>
+      Care Connect empowers hospitals, doctors, and physician partners  
+      with real-time appointment tracking, digital prescriptions,  
+      and seamless collaboration — all in one powerful platform.
+    </p>
+
+    <button class="hero-btn" onclick="location.href='login.html'">
+      Get Started Now
+    </button>
+
+    <!-- 🔥 PREMIUM INFO BAR -->
+    <div class="glass-box">
+      <div>⚡ Real-time Appointments</div>
+      <div>📄 Smart Prescriptions</div>
+      <div>🔗 Provider-Partner Sync</div>
+      <div>💬 Built-in Chat System</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 🔥 FEATURES -->
+<div class="container features">
+  <h3 class="text-center mb-4">Why Choose Care Connect?</h3>
+
+  <div class="row g-3">
+
+    <div class="col-md-6">
+      <div class="feature-card">
+        <h5>👨‍⚕️ For Doctors</h5>
+        <ul>
+          <li>Instant patient history access</li>
+          <li>One-click prescription generation</li>
+          <li>Live appointment tracking</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="feature-card">
+        <h5>🤝 For Partners</h5>
+        <ul>
+          <li>Quick appointment scheduling</li>
+          <li>Auto-fill previous prescriptions</li>
+          <li>Seamless doctor collaboration</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 🔥 FOOTER -->
+<footer>
+© 2025 Care Connect | Bliss Tech7 Solutions
+</footer>
 
 </body>
 </html>
