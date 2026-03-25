@@ -5,12 +5,21 @@ I will split it into multiple parts while ensuring it's easy to copy and use. He
 <!DOCTYPE html>
 <html lang="en">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<!-- jQuery (required) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <head>
   <meta charset="UTF-8" />
   <title>Provider Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-  body {
+ body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f7fc;
   color: #333;
@@ -18,14 +27,6 @@ I will split it into multiple parts while ensuring it's easy to copy and use. He
   margin: auto;
 }
 
-/* ---------- HEADINGS ---------- */
-h2, h3 {
-  text-align: center;
-  color: #2a4d69;
-  margin-bottom: 1.5rem;
-}
-
-/* ---------- HEADER ---------- */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -34,285 +35,125 @@ h2, h3 {
   padding: 0 1rem;
 }
 
-.info-box {
-  font-size: 0.9rem;
-  color: #2a4d69;
+.profile-left { line-height: 1.5; }
+.profile-right { line-height: 1.5; opacity: 0.9; }
+
+/* ===== GLASS CARD ===== */
+#hospitalProfileDetails {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  color: #1e293b;
+  transition: 0.2s ease;
 }
 
-/* ---------- HOSPITAL CARD ---------- */
-#hospitalProfileSection {
-  background: #1e1e2f;
-  color: #f0f0f0;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  margin-bottom: 20px; /* ✅ SPACE FIX */
-  font-size: 0.9rem;
-  animation: fadeIn 0.4s ease-in-out;
+#hospitalProfileDetails:hover {
+  transform: translateY(-2px);
 }
 
-#hospitalProfileSection label {
-  color: #ccc;
+/* Hospital Name */
+#hospitalNameDisplay {
+  display: block;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
-#hospitalProfileSection input,
-#hospitalProfileSection textarea {
-  background-color: #2a2a3d;
-  color: #fff;
-  border: 1px solid #444;
-}
-
-#hospitalProfileSection .form-control::placeholder {
-  color: #888;
-}
-
-#hospitalProfileSection .btn {
-  font-size: 0.8rem;
-  padding: 0.3rem 0.9rem;
-}
-
-#hospitalProfileSection hr {
-  border-top: 1px solid #444;
-}
-
-/* ---------- APPOINTMENT SECTION ---------- */
-#appointmentsSection {
-  margin-top: 20px; /* ✅ SPACE FIX */
-  background: #ffffff;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-/* ---------- FORM ---------- */
-.form-control:focus,
-.form-select:focus {
-  border-color: #2a4d69;
-  box-shadow: 0 0 5px rgba(42, 77, 105, 0.5);
-}
-
-.form-label {
-  font-weight: 500;
-  color: #2a4d69;
-}
-
-/* ---------- BUTTONS ---------- */
-.btn {
-  border-radius: 30px;
-  padding: 0.5rem 1.25rem;
-  transition: all 0.2s ease-in-out;
-}
-
-.btn-primary {
-  background-color: #2a4d69;
-  border: none;
-}
-
-.btn-primary:hover {
-  background-color: #1f3950;
-}
-
-.btn-success {
-  background-color: #3caea3;
-  border: none;
-}
-
-.btn-success:hover {
-  background-color: #319c91;
-}
-
-.btn-warning {
-  background-color: #ffc107;
-  border: none;
-}
-
-.btn-warning:hover {
-  background-color: #e0a800;
-}
-
-.btn-info {
-  background-color: #17a2b8;
-  border: none;
-}
-
-.btn-info:hover {
-  background-color: #138496;
-}
-
-/* ---------- TABLE ---------- */
-.table {
-  background-color: white;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.table thead {
-  background-color: #2a4d69;
-  color: white;
-}
-
-.table tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-/* ---------- SEARCH ---------- */
-#searchPatient {
-  border-radius: 25px;
-  padding-left: 20px;
-  border: 1px solid #ced4da;
-  width: 100%;
-}
-
-#searchPatient:focus {
-  border-color: #2a4d69;
-  box-shadow: 0 0 5px rgba(42, 77, 105, 0.4);
-}
-
-/* ---------- MODAL ---------- */
-.modal-content {
-  border-radius: 15px;
-}
-
-.modal-header {
-  background-color: #2a4d69;
-  color: white;
-  border-bottom: none;
-}
-
-.modal-footer {
-  border-top: none;
-}
-
-/* ---------- UTILITY ---------- */
-.blurred {
-  filter: blur(4px);
-  pointer-events: none;
-  user-select: none;
-  opacity: 0.6;
-}
-
-.unblurred {
-  filter: none !important;
-  pointer-events: auto !important;
-  user-select: auto !important;
-  opacity: 1 !important;
-}
-
-/* ---------- APPOINTMENT CARD (MOBILE) ---------- */
-.appointment-card {
-  background: white;
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  font-size: 14px;
-}
-.modal-body .form-label {
-  font-size: 13px;
-  margin-bottom: 2px;
-}
-
-.modal-body .form-control,
-.modal-body .form-select {
-  padding: 6px 10px;
-  font-size: 14px;
-}
-.appointment-card .row-line {
+/* Layout */
+.profile-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 6px;
+  align-items: center;
+  gap: 10px;
 }
 
-.card-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
+/* Text */
+.profile-left b { color: #0f172a; }
+.profile-left span,
+.profile-right { color: #334155; }
+
+.profile-specialty {
+  color: #38bdf8;
+  font-weight: 500;
 }
 
-.card-actions button {
-  flex: 1;
+/* ===== DARK MODE ===== */
+body.dark-theme {
+  background: #0f172a;
+  color: #e2e8f0;
 }
-
-/* ---------- ANIMATION ---------- */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ---------- RESPONSIVE ---------- */
-@media (max-width:768px) {
-
-  table {
-    font-size: 13px;
-  }
-
-  th, td {
-    white-space: nowrap;
-  }
-
-  .btn {
-    padding: 4px 8px;
-    font-size: 12px;
-  }
-}
-@media (max-width: 576px) {
-  #searchPatient {
-    min-width: 100%;
-  }
-
-  .btn-group {
-    width: 100%;
-  }
-
-  .btn-group .btn {
-    flex: 1;
-  }
-}
-@media (max-width:576px) {
-
-  /* ✅ MOBILE SPACING FIX */
-  #hospitalProfileSection {
-    margin-bottom: 15px;
-  }
-
-  #appointmentsSection {
-    margin-top: 15px;
-    padding: 12px;
-  }
-
-  .modal-dialog {
-    margin: 10px;
-  }
-
-  .modal-body {
-    font-size: 14px;
-  }
-
-  #chatBox {
-    width: 95% !important;
-    right: 2.5% !important;
-    height: 70vh !important;
-  }
-
-  #chatToggle {
-    right: 15px;
-    bottom: 15px;
-  }
-}
-
-/* ---------- MISC ---------- */
-.btn-group {
-  flex-wrap: wrap;
-}
-
 .table-responsive {
-  border-radius: 10px;
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  table {
+    min-width: 700px; /* prevents breaking */
+  }
+}
+body.dark-theme #hospitalProfileDetails::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(
+    120deg,
+    rgba(56,189,248,0.15),
+    transparent
+  );
+  pointer-events: none;
+}
+body.dark-theme #hospitalProfileDetails {
+  background: rgba(15, 23, 42, 0.6); /* deep glass */
+  backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+
+  color: #f8fafc;
+}
+#appointmentTable th:last-child,
+#appointmentTable td:last-child {
+  width: 120px;
+  min-width: 120px;
+  text-align: center;
+  white-space: nowrap;
+}
+body.dark-theme .profile-left b { color: #f8fafc; }
+body.dark-theme .profile-left span,
+body.dark-theme .profile-right { color: #cbd5f5; }
+
+/* ===== MOBILE ===== */
+@media (max-width: 576px) {
+  .profile-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-left,
+  .profile-right {
+    width: 100%;
+    text-align: left;
+  }
+
+  #hospitalNameDisplay {
+    font-size: 18px;
+  }
+}.btn-sm {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}#appointmentTable th:last-child,
+#appointmentTable td:last-child {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 2;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
   </style>
 </head>
@@ -335,19 +176,20 @@ h2, h3 {
   
     <button class="btn btn-success btn-sm"
 onclick="window.location.href='collection.html'">
-💰 Money Collection </button>
+ Money Collection </button>
 
     <button onclick="logout()" 
       style="background:#dc3545;color:white;border:none;padding:6px 12px;border-radius:5px;font-size:13px;cursor:pointer;">
       Logout
     </button>
+    
   </div>
 
 </div>
 
   
-<div id="hospitalProfileSection"  style="margin-bottom:20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:1100px;margin:auto;">
-
+<div id="hospitalProfileSection"  
+style="margin-bottom:20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;width:100%;">
 <!-- Top Actions -->
 
 <div style="
@@ -362,16 +204,17 @@ margin-bottom:10px;
 <button class="btn btn-success btn-sm"
 style="border-radius:20px;padding:4px 10px;font-size:12px;"
 onclick="window.location.href='collection.html'">
-💰 Money
+ Money
 </button>
-<button class="btn btn-primary"
+<button class="btn btn-success btn-sm"
+style="border-radius:20px;padding:4px 10px;font-size:12px;"
 onclick="window.location.href='medicine-master.html'">
-💊 Medicines
+ Medicines
 </button>
 <button id="updateHospitalBtn"
-class="btn btn-warning btn-sm"
+class="btn btn-success btn-sm"
 style="border-radius:20px;padding:4px 10px;font-size:12px;">
-✏️ Update
+profile
 </button>
 
 <button onclick="logout()"
@@ -385,20 +228,16 @@ font-size:12px;
 cursor:pointer;">
 Logout
 </button>
-
+<button id="themeToggle"
+class="btn btn-sm btn-dark"
+style="border-radius:20px;padding:4px 10px;font-size:12px;">
+🌙 Dark
+</button>
 </div>
 
 <!-- PROFILE CARD -->
 
-<div id="hospitalProfileDetails" style="
-background:#111827;
-color:white;
-border-radius:12px;
-padding:14px;
-margin-bottom:15px;
-font-size:13px;
-font-family:'Segoe UI',sans-serif;
-">
+<div id="hospitalProfileDetails">
 
 <!-- Hospital Name (CENTER + UNIQUE FONT) -->
 <div style="
@@ -409,39 +248,24 @@ letter-spacing:0.5px;
 font-family:'Poppins','Segoe UI',sans-serif;
 margin-bottom:8px;
 ">
-🏥 <span id="hospitalNameDisplay"></span>
+ <span id="hospitalNameDisplay"></span>
 </div>
 
-<!-- Single Row -->
-<div style="
-display:flex;
-justify-content:space-between;
-align-items:center;
-flex-wrap:wrap;
-gap:8px;
-font-size:13px;
-">
+<div class="profile-row">
 
-<!-- LEFT -->
-<div style="flex:1;min-width:220px;">
-👨‍⚕️ 
-<b id="doctorNameDisplay"></b> 
-<span style="opacity:.8;">| <span id="doctorEducationDisplay"></span></span> 
-<span style="color:#38bdf8;">| <span id="doctorSpecialtyDisplay"></span></span>
-</div>
+  <!-- LEFT -->
+  <div class="profile-left">
+    <b id="doctorNameDisplay"></b> 
+    <span>•<span id="doctorEducationDisplay"></span></span> 
+    <span class="profile-specialty">• <span id="doctorSpecialtyDisplay"></span></span>
+  </div>
 
-<!-- RIGHT -->
-<div style="
-flex:1;
-min-width:220px;
-text-align:right;
-">
-
-📍 <span id="hospitalAddressDisplay"></span>  
-<span style="opacity:.6;">|</span>  
-✉️ <span id="hospitalEmailDisplay"></span>
-
-</div>
+  <!-- RIGHT -->
+  <div class="profile-right">
+    <span id="hospitalAddressDisplay"></span>  
+<span style="margin:0 6px;opacity:.4;">•</span>
+    <span id="hospitalEmailDisplay"></span>
+  </div>
 
 </div>
 
@@ -466,7 +290,7 @@ border-radius:14px;
 box-shadow:0 6px 18px rgba(0,0,0,0.12);
 ">
 
-<div style="font-weight:600;font-size:16px;margin-bottom:10px;">🏥 Hospital Details</div>
+<div style="font-weight:600;font-size:16px;margin-bottom:10px;"> Hospital Details</div>
 
 <div style="margin-bottom:10px;">
 <label style="font-size:13px;font-weight:500;">Hospital Name</label>
@@ -496,7 +320,7 @@ required>
 <hr style="margin:15px 0;">
 
 <div style="font-weight:600;font-size:15px;margin-bottom:10px;">
-👨‍⚕️ Doctor Details
+ Doctor Details
 </div>
 
 <div style="margin-bottom:10px;">
@@ -527,7 +351,7 @@ required>
 <button type="submit"
 class="btn btn-success"
 style="border-radius:30px;padding:6px 16px;font-weight:500;">
-💾 Save
+ Save
 </button>
 
 <button type="button"
@@ -551,44 +375,24 @@ Cancel </button>
  <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
 
   <!-- Search -->
-  <input
-    type="text"
-    id="searchPatient"
-    class="form-control"
-    placeholder="Search by mobile or name"
-    style="flex:1; min-width:200px;"
-  />
+ 
 
   <!-- Date -->
-  <input
-    type="date"
-    class="form-control"
-    id="filterDate"
-    style="width:150px"
-  />
+ <input
+  type="date"
+  class="form-control"
+  id="filterDate"
+  style="width:150px"
+  onchange="filterAppointmentsByDate()"
+/>
 
-  <!-- Filter -->
-<button
-  class="btn btn-outline-secondary"
-  onclick="filterAppointmentsByDate()">
-  Filter
-</button>
 
-  <!-- Status Buttons -->
-  <div class="btn-group">
-    <button class="btn btn-outline-primary"
-      onclick="filterAppointments('all')">All</button>
 
-    <button class="btn btn-outline-warning"
-      onclick="filterAppointments('Pending')">Pending</button>
-
-    <button class="btn btn-outline-success"
-      onclick="filterAppointments('Completed')">Completed</button>
-  </div>
+  
 
   <!-- Add Button -->
   <button
-    class="btn btn-success ms-auto"
+    class="btn btn-success ms-auto px-4"
     data-bs-toggle="modal"
     data-bs-target="#addAppointmentModal"
     id="addNewBtn"
@@ -705,7 +509,37 @@ Cancel </button>
       </form>
     </div>
   </div>
+<!-- Patient History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
 
+      <div class="modal-header">
+        <h5 class="modal-title">Patient History</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Disease</th>
+              <th>Medicines</th>
+              <th>Follow-up</th>
+              <th>Vitals</th>
+            </tr>
+          </thead>
+
+          <tbody id="historyBody"></tbody>
+        </table>
+
+      </div>
+
+    </div>
+  </div>
+</div>
   <!-- Prescription Modal (unchanged) -->
   <div class="modal fade" id="prescriptionModal" tabindex="-1" aria-labelledby="prescriptionLabel" aria-hidden="true">
 <div class="modal-dialog modal-lg">
@@ -787,7 +621,7 @@ const paymentMode = document.getElementById("paymentMode");
   const doctorNameDisplay = document.getElementById("doctorNameDisplay");
   const doctorEducationDisplay = document.getElementById("doctorEducationDisplay");
   const doctorSpecialtyDisplay = document.getElementById("doctorSpecialtyDisplay");
-
+let unsubscribeAppointments = null;
   // Hospital profile form inputs
   const hospitalNameInput = document.getElementById("hospitalName");
   const hospitalAddressInput = document.getElementById("hospitalAddress");
@@ -817,7 +651,26 @@ const paymentMode = document.getElementById("paymentMode");
       addNewBtn.disabled = true;
     }
   }
+let dataTable;
 
+function initDataTable() {
+  if ($.fn.DataTable.isDataTable('#appointmentTable')) {
+    $('#appointmentTable').DataTable().destroy();
+  }
+
+  dataTable = $('#appointmentTable').DataTable({
+    paging: true,
+    searching: true,
+    ordering: true,
+    info: true,
+    responsive: true,
+    pageLength: 10,
+    language: {
+      search: "🔍 Search:",
+      lengthMenu: "Show _MENU_ entries",
+    }
+  });
+}
   // Show hospital profile details on page
   function showHospitalProfile(data) {
     hospitalNameDisplay.textContent = data.hospitalName || "";
@@ -949,8 +802,7 @@ window.hospitalId = hospitalId;}
 
       showHospitalProfile(data);
       toggleAppointmentSection(true);
-      loadAppointments();
-
+filterAppointmentsByDate();
     } else {
 
       hospitalId = null;
@@ -967,7 +819,37 @@ window.hospitalId = hospitalId;}
   }
 }
 
+// ===== THEME TOGGLE =====
+const themeToggle = document.getElementById("themeToggle");
 
+// Load saved theme
+const savedTheme = localStorage.getItem("theme") || "light-theme";
+document.body.classList.add(savedTheme);
+
+updateButtonText();
+
+// Toggle click
+themeToggle.addEventListener("click", () => {
+
+  if (document.body.classList.contains("light-theme")) {
+    document.body.classList.replace("light-theme", "dark-theme");
+    localStorage.setItem("theme", "dark-theme");
+  } else {
+    document.body.classList.replace("dark-theme", "light-theme");
+    localStorage.setItem("theme", "light-theme");
+  }
+
+  updateButtonText();
+});
+
+// Update button text/icon
+function updateButtonText() {
+  if (document.body.classList.contains("dark-theme")) {
+    themeToggle.textContent = "☀️";
+  } else {
+    themeToggle.textContent = "🌙";
+  }
+}
   let allAppointments = []; // Store full list for filtering
 
 function loadAppointments() {
@@ -1013,23 +895,15 @@ function loadAppointments() {
 }
 
 
-function filterAppointments(status) {
-  if (status === "all") {
-    loadAppointments(); // reload today's data
-  } else {
-    renderAppointments(status);
-  }
-}
-function renderAppointments(filterStatus = "all") {
 
+function renderAppointments() {
   appointmentBody.innerHTML = "";
   appointmentCards.innerHTML = "";
-
-  let filtered = [...allAppointments];
-
-  if (filterStatus !== "all") {
-    filtered = filtered.filter(a => (a.status || "Pending") === filterStatus);
+ // 🔥 Destroy DataTable BEFORE rebuilding
+  if ($.fn.DataTable.isDataTable('#appointmentTable')) {
+    $('#appointmentTable').DataTable().clear().destroy();
   }
+ let filtered = [...allAppointments];
 
   filtered.sort((a, b) => {
     const sa = a.status || "Pending";
@@ -1041,7 +915,7 @@ if (filtered.length === 0) {
 
 appointmentBody.innerHTML = `
 <tr>
-<td colspan="10" class="text-center text-muted">No appointments found
+<td colspan="11" class="text-center text-muted">No appointments found
 </td>
 </tr>
 `;
@@ -1067,8 +941,8 @@ return;
     /* ---------- TABLE ROW ---------- */
 
     appointmentBody.innerHTML += `
-      <tr>
-
+<tr onclick="showPatientHistory('${d.mobile}','${d.patientName}')"
+style="cursor:pointer">
 
         <td>${d.patientName}</td>
         <td>${d.mobile}</td>
@@ -1087,17 +961,25 @@ return;
 
         <td>${d.feePaid ? "Yes" : "No"}</td>
 
-        <td>
-     <button class="btn btn-sm btn-primary"
-onclick="editAppointment('${d.id}')">✏️</button>
+       <td>
+  <div class="d-flex justify-content-center gap-1">
+    <button class="btn btn-sm btn-success"
+      onclick="event.stopPropagation(); editAppointment('${d.id}')"title="Edit">✏️</button>
 
-<button class="btn btn-sm btn-danger"
-onclick="deleteAppointment('${d.id}')">🗑️</button>
+    <button class="btn btn-sm btn-success"
+      onclick="event.stopPropagation(); openPrescriptionPage(
+  '${d.id}',
+  '${d.age || ""}',
+  '${d.patientName || ""}',
+  '${d.mobile || ""}',
+  '${d.date?.toDate().toISOString() || ""}',
+  '${d.gender || ""}'
+)" title="Prescription">📝</button>
 
-<button class="btn btn-sm btn-info"
-onclick="openPrescriptionPage('${d.id}','${d.age}','${d.patientName}','${d.mobile}','${d.date?.toDate().toISOString() || ""}','${d.gender}')">
-📝
-</button>
+    <button class="btn btn-sm btn-danger"
+      onclick="event.stopPropagation(); deleteAppointment('${d.id}')" title="Delete">🗑️</button>
+  </div>
+</td>
       </tr>
     `;
 
@@ -1166,7 +1048,79 @@ onclick="openPrescriptionPage('${d.id}','${d.age}','${d.patientName}','${d.mobil
     `;
 
   });
+setTimeout(() => {
+  initDataTable();
+}, 100);
+}
+async function showPatientHistory(mobile, name) {
+  if (!hospitalId) return;
 
+  try {
+
+    const snap = await db
+      .collectionGroup("prescriptions")
+      .where("mobile", "==", mobile)
+      .where("patientName", "==", name)
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const historyBody = document.getElementById("historyBody");
+    historyBody.innerHTML = "";
+
+    if (snap.empty) {
+      historyBody.innerHTML = `
+        <tr><td colspan="5" class="text-center">No history found</td></tr>
+      `;
+      return;
+    }
+
+    let isFirst = true;
+
+    snap.forEach(doc => {
+
+      const d = doc.data();
+
+      const dateStr = d.createdAt?.toDate().toLocaleDateString() || "";
+
+      // ✅ Medicines comma separated
+      const medicines = (d.medicines || [])
+        .map(m => m.name)
+        .filter(Boolean)
+        .join(", ");
+
+      historyBody.innerHTML += `
+        <tr>
+
+          <td>
+            ${dateStr}
+            ${isFirst ? '<span class="badge bg-success ms-1">Last</span>' : ''}
+          </td>
+
+          <td>${d.disease || "-"}</td>
+
+          <td>${medicines || "-"}</td>
+
+          <td>${d.followupDate || "-"}</td>
+
+          <td style="font-size:12px">
+            BP:${d.bp || "-"} |
+            Sugar:${d.sugar || "-"} |
+            Pulse:${d.pulse || "-"}
+          </td>
+
+        </tr>
+      `;
+
+      isFirst = false;
+
+    });
+
+    new bootstrap.Modal(document.getElementById("historyModal")).show();
+
+  } catch (err) {
+    console.error(err);
+    alert("Error loading history");
+  }
 }
 const today = new Date();
 const localDate = today.getFullYear() + "-" +
@@ -1323,25 +1277,7 @@ window.location.href = "prescription.html?" + query;
 };
 
   // Search filter for appointments (simple client side)
-searchInput.addEventListener("input", () => {
-
-const term = searchInput.value.toLowerCase();
-
-const rows = appointmentBody.querySelectorAll("tr");
-
-rows.forEach(row => {
-
-const nameCell = row.cells[1]?.textContent.toLowerCase() || "";
-const mobileCell = row.cells[2]?.textContent.toLowerCase() || "";
-row.style.display =
-(nameCell.includes(term) || mobileCell.includes(term))
-? ""
-: "none";
-
-});
-
-});
-  function logout() {
+ function logout() {
   auth.signOut().then(() => {
     alert("Logged out successfully.");
     window.location.href = "login.html";
@@ -1353,6 +1289,16 @@ row.style.display =
 function filterAppointmentsByDate() {
   const selectedDateStr = document.getElementById("filterDate").value;
   if (!selectedDateStr || !hospitalId) return;
+
+  // 🔥 Stop old listener
+  if (unsubscribeAppointments) {
+    unsubscribeAppointments();
+    unsubscribeAppointments = null;
+  }
+
+  // 🔥 Clear UI immediately (prevents old data flash)
+  allAppointments = [];
+  renderAppointments();
 
   const selectedDate = new Date(selectedDateStr);
 
@@ -1373,7 +1319,7 @@ function filterAppointmentsByDate() {
   const startTimestamp = firebase.firestore.Timestamp.fromDate(startOfDay);
   const endTimestamp = firebase.firestore.Timestamp.fromDate(endOfDay);
 
-  db.collection("hospitals")
+  unsubscribeAppointments = db.collection("hospitals")
     .doc(hospitalId)
     .collection("appointments")
     .where("date", ">=", startTimestamp)
@@ -1381,13 +1327,13 @@ function filterAppointmentsByDate() {
     .orderBy("date", "asc")
     .onSnapshot(snapshot => {
 
+      // 🔥 Always replace data (not append)
       allAppointments = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
 
-      renderAppointments("all");
-
+      renderAppointments();
     });
 }
 </script>

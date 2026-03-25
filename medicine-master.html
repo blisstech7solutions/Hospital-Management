@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -24,6 +23,10 @@ body{
   align-items:center;
   margin-bottom:15px;
 }
+#suggestions{
+  max-height:200px;
+  overflow-y:auto;
+}
 </style>
 
 </head>
@@ -41,10 +44,10 @@ body{
 
 <div class="row g-2 mb-3">
   <div class="col-md-4">
-    <input id="medName" class="form-control" placeholder="Medicine (e.g. Ecosprin)">
+    <input id="medName" class="form-control" placeholder="Medicine">
   </div>
   <div class="col-md-3">
-    <input id="medStrength" class="form-control" placeholder="Strength (e.g. 75 mg)">
+    <input id="medStrength" class="form-control" placeholder="Strength">
   </div>
   <div class="col-md-3">
     <select id="medType" class="form-select">
@@ -60,20 +63,14 @@ body{
 </div>
 
 <!-- SEARCH -->
-
-<input 
-type="text" 
-id="searchMedicine" 
-class="form-control mb-3" 
-placeholder="🔍 Search medicine (eco, dolo, 500 mg)">
+<input type="text" id="searchMedicine" class="form-control mb-2" placeholder="🔍 Search medicine">
+<div id="suggestions" class="list-group mb-3"></div>
 
 <!-- EXCEL -->
-
 <input type="file" id="fileInput" class="form-control mb-2" accept=".xlsx,.xls,.csv">
 <button class="btn btn-primary w-100 mb-3" onclick="uploadExcel()">Upload Excel</button>
 
 <!-- TABLE -->
-
 <table class="table table-bordered">
   <thead>
     <tr>
@@ -89,15 +86,11 @@ placeholder="🔍 Search medicine (eco, dolo, 500 mg)">
 </div>
 
 <!-- Firebase -->
-
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
 <!-- Excel -->
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <script>
@@ -119,7 +112,12 @@ const auth = firebase.auth();
 
 let hospitalId;
 let editId = null;
-let allMedicines = [];
+
+// PAGINATION
+let lastDoc = null;
+let pageSize = 20;
+let isLoading = false;
+let searchTimeout;
 
 // GET HOSPITAL
 async function getHospital(){
@@ -132,66 +130,93 @@ async function getHospital(){
 
   if(!snap.empty){
     hospitalId = snap.docs[0].id;
-    loadMedicines();
+    loadMedicines(true);
   }else{
     alert("No hospital found");
   }
 }
 
-// LOAD
-async function loadMedicines(){
+// LOAD (PAGINATION + INFINITE SCROLL)
+async function loadMedicines(reset = true){
 
-  const snap = await db.collection("hospitals")
+  if(isLoading) return;
+  isLoading = true;
+
+  if(reset){
+    medList.innerHTML = "";
+    lastDoc = null;
+  }
+
+  let query = db.collection("hospitals")
     .doc(hospitalId)
     .collection("medicines")
     .orderBy("name")
-    .get();
+    .limit(pageSize);
 
-  allMedicines = [];
+  if(lastDoc){
+    query = query.startAfter(lastDoc);
+  }
 
-  snap.forEach(doc=>{
-    allMedicines.push({
-      id: doc.id,
-      ...doc.data()
+  const snap = await query.get();
+
+  if(!snap.empty){
+    lastDoc = snap.docs[snap.docs.length - 1];
+
+    snap.forEach(doc=>{
+      renderRow(doc.id, doc.data());
     });
-  });
+  }
 
-  renderMedicines(allMedicines);
+  isLoading = false;
 }
 
-// RENDER
-function renderMedicines(list){
+// RENDER ROW
+function renderRow(id, m){
+  medList.innerHTML += `
+    <tr>
+      <td>${m.name}</td>
+      <td>${m.strength}</td>
+      <td>${m.type}</td>
+      <td>
+        <button class="btn btn-sm btn-warning"
+        onclick="editMedicine('${id}','${m.name}','${m.strength}','${m.type}')">Edit</button>
 
-  medList.innerHTML = "";
-
-  list.forEach(m => {
-    medList.innerHTML += `
-      <tr>
-        <td>${m.name}</td>
-        <td>${m.strength}</td>
-        <td>${m.type}</td>
-        <td>
-          <button class="btn btn-sm btn-warning"
-          onclick="editMedicine('${m.id}','${m.name}','${m.strength}','${m.type}')">Edit</button>
-
-          <button class="btn btn-sm btn-danger"
-          onclick="deleteMedicine('${m.id}')">Delete</button>
-        </td>
-      </tr>
-    `;
-  });
-
+        <button class="btn btn-sm btn-danger"
+        onclick="deleteMedicine('${id}')">Delete</button>
+      </td>
+    </tr>
+  `;
 }
 
-// ADD / UPDATE
+// INFINITE SCROLL
+window.addEventListener("scroll", () => {
+  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+    loadMedicines(false);
+  }
+});
+
+// ADD / UPDATE WITH DUPLICATE CHECK
 async function addMedicine(){
 
-  const name = medName.value.trim();
+  const name = medName.value.trim().toLowerCase();
   const strength = medStrength.value.trim();
   const type = medType.value;
 
   if(!name || !strength){
     alert("Enter medicine & strength");
+    return;
+  }
+
+  const check = await db.collection("hospitals")
+    .doc(hospitalId)
+    .collection("medicines")
+    .where("name","==",name)
+    .where("strength","==",strength)
+    .limit(1)
+    .get();
+
+  if(!check.empty && !editId){
+    alert("Medicine already exists!");
     return;
   }
 
@@ -218,7 +243,7 @@ async function addMedicine(){
   medName.value = "";
   medStrength.value = "";
 
-  loadMedicines();
+  loadMedicines(true);
 }
 
 // EDIT
@@ -239,26 +264,57 @@ async function deleteMedicine(id){
     .doc(id)
     .delete();
 
-  loadMedicines();
+  loadMedicines(true);
 }
 
-// SEARCH
+// AUTO SUGGESTIONS + SEARCH
 document.getElementById("searchMedicine")
 .addEventListener("input", function(){
 
-  const q = this.value.toLowerCase();
+  clearTimeout(searchTimeout);
+  const q = this.value.trim().toLowerCase();
 
-  const filtered = allMedicines.filter(m => 
-    (m.name || "").toLowerCase().includes(q) ||
-    (m.strength || "").toLowerCase().includes(q) ||
-    (m.type || "").toLowerCase().includes(q)
-  );
+  searchTimeout = setTimeout(async () => {
 
-  renderMedicines(filtered);
+    if(!q){
+      suggestions.innerHTML = "";
+      loadMedicines(true);
+      return;
+    }
+
+    const snap = await db.collection("hospitals")
+      .doc(hospitalId)
+      .collection("medicines")
+      .orderBy("name")
+      .startAt(q)
+      .endAt(q + "\uf8ff")
+      .limit(5)
+      .get();
+
+    suggestions.innerHTML = "";
+
+    snap.forEach(doc=>{
+      const m = doc.data();
+
+      suggestions.innerHTML += `
+        <button class="list-group-item list-group-item-action"
+        onclick="selectSuggestion('${m.name}')">
+          ${m.name} (${m.strength})
+        </button>
+      `;
+    });
+
+  }, 300);
 
 });
 
-// EXCEL
+function selectSuggestion(name){
+  searchMedicine.value = name;
+  suggestions.innerHTML = "";
+  loadMedicines(true);
+}
+
+// BULK EXCEL UPLOAD (BATCH)
 async function uploadExcel(){
 
   const file = fileInput.files[0];
@@ -274,26 +330,29 @@ async function uploadExcel(){
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet);
 
-    for(const row of json){
+    const batch = db.batch();
 
-      const name = row.name || row.Name;
+    json.forEach(row => {
+
+      const name = (row.name || row.Name || "").toLowerCase();
       const strength = row.strength || row.Strength;
       const type = row.type || row.Type || "Tablet";
 
-      if(!name || !strength) continue;
+      if(!name || !strength) return;
 
-      await db.collection("hospitals")
+      const ref = db.collection("hospitals")
         .doc(hospitalId)
         .collection("medicines")
-        .add({
-          name,
-          strength,
-          type
-        });
-    }
+        .doc();
 
-    alert("Upload complete");
-    loadMedicines();
+      batch.set(ref, { name, strength, type });
+
+    });
+
+    await batch.commit();
+
+    alert("Upload complete 🚀");
+    loadMedicines(true);
   };
 
   reader.readAsArrayBuffer(file);

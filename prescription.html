@@ -808,12 +808,26 @@ gender:gender.value,
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 };
 
-await db.collection("hospitals")
-.doc(hospitalId)
-.collection("appointments")
-.doc(appointmentId)
-.collection("prescriptions")
-.add(data);
+try {
+  await db.collection("hospitals")
+    .doc(hospitalId)
+    .collection("appointments")
+    .doc(appointmentId)
+    .collection("prescriptions")
+    .add(data);
+
+  await db.collection("hospitals")
+    .doc(hospitalId)
+    .collection("appointments")
+    .doc(appointmentId)
+    .update({
+      status: "Completed"
+    });
+
+} catch (err) {
+  console.error("Error saving prescription:", err);
+  alert("Failed to save prescription");
+}
 
 /* PRINT DATA */
 pBP.textContent = bp.value;

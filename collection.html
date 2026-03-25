@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 
@@ -10,459 +11,376 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
 body{
-background:#f6f8fb;
-font-family:Segoe UI;
+  background: linear-gradient(135deg,#eef2ff,#f8fafc);
+  font-family: 'Inter','Segoe UI',sans-serif;
 }
 
 /* HEADER */
-
 .header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:20px;
-flex-wrap:wrap;
-gap:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+  padding:10px 0;
+  border-bottom:1px solid #e5e7eb;
+}
+
+/* FILTER */
+.btn-group .btn{
+  border-radius:20px !important;
+  padding:4px 14px;
+  font-size:13px;
+}
+
+.btn.active-filter{
+  background:#0d6efd !important;
+  color:white !important;
 }
 
 /* CARDS */
-
 .card-box{
-border-radius:10px;
-padding:18px;
-color:white;
-text-align:center;
+  border-radius:14px;
+  padding:18px;
+  color:white;
+  text-align:center;
+  font-weight:500;
+  box-shadow:0 8px 20px rgba(0,0,0,0.08);
+  transition:0.2s ease;
+}
+.card-box:hover{
+  transform:translateY(-3px);
 }
 
-.total{background:#007bff;}
-.cash{background:#28a745;}
-.upi{background:#6f42c1;}
-.card{background:#fd7e14;}
+.total{background:linear-gradient(135deg,#3b82f6,#2563eb);}
+.cash{background:linear-gradient(135deg,#22c55e,#16a34a);}
+.upi{background:linear-gradient(135deg,#8b5cf6,#6d28d9);}
+.card{background:linear-gradient(135deg,#f97316,#ea580c);}
 
 /* TABLE */
-
+.table{
+  background:white;
+  border-radius:12px;
+  overflow:hidden;
+}
 .table th{
-background:#007bff;
-color:white;
-text-align:center;
+  background:#0d6efd;
+  color:white;
+  text-align:center;
+}
+.table td{
+  text-align:center;
 }
 
-.table td{
-text-align:center;
+/* EMPTY */
+.empty-state{
+  padding:30px;
+  color:#6b7280;
 }
 
 /* CHART */
-
 .chart-box{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 0 10px rgba(0,0,0,0.08);
+  background:white;
+  padding:18px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
-
-/* MOBILE IMPROVEMENTS */
-
-@media(max-width:768px){
-
-h4{
-font-size:18px;
-}
-
-.card-box{
-padding:12px;
-}
-
-.card-box h3{
-font-size:20px;
-}
-
-.chart-box{
-padding:15px;
-}
-
-}
-
 </style>
 
 </head>
 
 <body class="container py-3">
 
-<!-- HEADER -->
-
 <div class="header">
-
-<h4 class="mb-0">Collection Dashboard</h4>
-
-<button class="btn btn-secondary btn-sm" onclick="history.back()">
-⬅ Back
-</button>
-
+<h4 class="mb-0">💰 Collection Dashboard</h4>
+<button class="btn btn-secondary btn-sm" onclick="history.back()">⬅ Back</button>
 </div>
-
 
 <!-- FILTER -->
 
-<div class="mb-4 text-center">
-
+<div class="text-center mb-4">
 <div class="btn-group">
-
-<button class="btn btn-primary btn-sm" onclick="loadCollection('daily')">
-Daily
-</button>
-
-<button class="btn btn-outline-primary btn-sm" onclick="loadCollection('weekly')">
-Weekly
-</button>
-
-<button class="btn btn-outline-primary btn-sm" onclick="loadCollection('monthly')">
-Monthly
-</button>
-
+<button class="btn btn-outline-primary btn-sm filter-btn active-filter" onclick="loadCollection('daily',this)">Daily</button>
+<button class="btn btn-outline-primary btn-sm filter-btn" onclick="loadCollection('weekly',this)">Weekly</button>
+<button class="btn btn-outline-primary btn-sm filter-btn" onclick="loadCollection('monthly',this)">Monthly</button>
+</div>
 </div>
 
-</div>
-
-
-<!-- SUMMARY CARDS -->
+<!-- CARDS -->
 
 <div class="row g-3 mb-4">
 
 <div class="col-6 col-md-3">
 <div class="card-box total">
 <h6>Total</h6>
-<h3 id="totalAmount">0</h3>
+<h3 id="totalAmount">₹ 0</h3>
 </div>
 </div>
 
 <div class="col-6 col-md-3">
 <div class="card-box cash">
 <h6>Cash</h6>
-<h3 id="cashAmount">0</h3>
+<h3 id="cashAmount">₹ 0</h3>
 </div>
 </div>
 
 <div class="col-6 col-md-3">
 <div class="card-box upi">
 <h6>UPI</h6>
-<h3 id="upiAmount">0</h3>
+<h3 id="upiAmount">₹ 0</h3>
 </div>
 </div>
 
 <div class="col-6 col-md-3">
 <div class="card-box card">
 <h6>Card</h6>
-<h3 id="cardAmount">0</h3>
+<h3 id="cardAmount">₹ 0</h3>
 </div>
 </div>
 
 </div>
-
 
 <div class="row g-4">
 
-<!-- PAYMENT PIE CHART -->
+<!-- PIE -->
 
-<div class="col-12 col-md-4">
-
+<div class="col-md-4">
 <div class="chart-box">
-
-<h6 class="text-center mb-3">
-Payment Distribution
-</h6>
-
+<h6 class="text-center">Payment Distribution</h6>
 <canvas id="paymentChart"></canvas>
-
+</div>
 </div>
 
-</div>
+<!-- TABLE -->
 
-
-<!-- COLLECTION TABLE -->
-
-<div class="col-12 col-md-8">
-
+<div class="col-md-8">
 <div class="table-responsive">
-
 <table class="table table-bordered">
-
 <thead>
-
 <tr>
 <th>Patient</th>
 <th>Amount</th>
 <th>Mode</th>
 </tr>
-
 </thead>
-
 <tbody id="collectionBody"></tbody>
-
 </table>
-
+</div>
 </div>
 
 </div>
 
-</div>
-
-
-<!-- TREND CHART -->
+<!-- TREND -->
 
 <div class="chart-box mt-4">
-
-<h6 class="text-center mb-3">
-Revenue Trend
-</h6>
-
+<h6 class="text-center">Revenue Trend</h6>
 <canvas id="trendChart"></canvas>
-
 </div>
 
-
-
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
 <script>
-
 const firebaseConfig={
 apiKey:"AIzaSyA-e5UveE8KsNuT-d6pYzdYFop3VoTomwk",
 authDomain:"hospital-management-syst-580a4.firebaseapp.com",
 projectId:"hospital-management-syst-580a4",
-storageBucket:"hospital-management-syst-580a4.appspot.com",
-messagingSenderId:"318105236795",
-appId:"1:318105236795:web:548c0e174553eeed67f31e"
 };
 
 firebase.initializeApp(firebaseConfig);
 
-const auth=firebase.auth();
 const db=firebase.firestore();
+const auth=firebase.auth();
 
 let hospitalId;
-let paymentChart;
-let trendChart;
-
-
-
-/* LOGIN */
+let paymentChart,trendChart;
 
 auth.onAuthStateChanged(async user=>{
-
-if(!user){
-location.href="login.html";
-return;
-}
+if(!user) return location.href="login.html";
 
 const userDoc=await db.collection("users").doc(user.uid).get();
 const userData=userDoc.data();
 
-let hospitalSnap;
-
-/* PROVIDER */
+let snap;
 
 if(userData.role==="provider"){
-
-hospitalSnap=await db.collection("hospitals")
-.where("providerEmail","==",user.email)
-.limit(1)
-.get();
-
+snap=await db.collection("hospitals")
+.where("providerEmail","==",user.email).limit(1).get();
+}else{
+snap=await db.collection("hospitals")
+.where("providerEmail","==",userData.linkedProviderEmail).limit(1).get();
 }
 
-/* PHYSICIAN */
+if(snap.empty) return alert("Hospital not found");
 
-else{
-
-hospitalSnap=await db.collection("hospitals")
-.where("providerEmail","==",userData.linkedProviderEmail)
-.limit(1)
-.get();
-
-}
-
-if(hospitalSnap.empty){
-alert("Hospital not found");
-return;
-}
-
-hospitalId=hospitalSnap.docs[0].id;
-
+hospitalId=snap.docs[0].id;
 loadCollection("daily");
-
 });
 
+function formatCurrency(val){
+return "₹ " + Number(val).toLocaleString("en-IN");
+}
 
+function loadCollection(period="daily",btn=null){
 
-/* LOAD COLLECTION */
+document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active-filter"));
+if(btn) btn.classList.add("active-filter");
 
-function loadCollection(period="daily"){
-
-let startDate=new Date();
-let endDate=new Date();
+let start=new Date();
+let end=new Date();
 
 if(period==="daily"){
-
-startDate.setHours(0,0,0,0);
-
-endDate=new Date(startDate);
-endDate.setDate(startDate.getDate()+1);
-
+start.setHours(0,0,0,0);
+end=new Date(start);
+end.setDate(start.getDate()+1);
 }
-
 if(period==="weekly"){
-
-startDate.setDate(startDate.getDate()-7);
-startDate.setHours(0,0,0,0);
-
+start.setDate(start.getDate()-7);
+start.setHours(0,0,0,0);
 }
-
 if(period==="monthly"){
-
-startDate.setDate(startDate.getDate()-30);
-startDate.setHours(0,0,0,0);
-
+start.setDate(start.getDate()-30);
+start.setHours(0,0,0,0);
 }
+const startTimestamp = firebase.firestore.Timestamp.fromDate(start);
+const endTimestamp = firebase.firestore.Timestamp.fromDate(end);
 
 db.collection("hospitals")
 .doc(hospitalId)
 .collection("appointments")
-.where("date",">=",startDate)
-.where("date","<",endDate)
+.where("date", ">=", startTimestamp)
+.where("date", "<", endTimestamp)
 .get()
-.then(snapshot=>renderCollection(snapshot.docs));
-
+.then(s => render(s.docs));
 }
 
+function render(docs){
 
-
-/* RENDER COLLECTION */
-
-function renderCollection(docs){
-
-let total=0;
-let cash=0;
-let upi=0;
-let card=0;
-
+let total=0,cash=0,upi=0,card=0;
 const body=document.getElementById("collectionBody");
 body.innerHTML="";
 
 docs.forEach(doc=>{
-
 const d=doc.data();
 
 if(d.feePaid){
+const amt=parseFloat(d.fee||0);
+total+=amt;
 
-const amount=parseFloat(d.fee||0);
-
-total+=amount;
-
-if(d.paymentMode==="Cash") cash+=amount;
-if(d.paymentMode==="UPI") upi+=amount;
-if(d.paymentMode==="Card") card+=amount;
+if(d.paymentMode==="Cash") cash+=amt;
+if(d.paymentMode==="UPI") upi+=amt;
+if(d.paymentMode==="Card") card+=amt;
 
 body.innerHTML+=`
 <tr>
 <td>${d.patientName}</td>
-<td>₹ ${amount}</td>
+<td>${formatCurrency(amt)}</td>
 <td>${d.paymentMode}</td>
-</tr>
-`;
-
+</tr>`;
 }
-
 });
 
-document.getElementById("totalAmount").innerText="₹ "+total;
-document.getElementById("cashAmount").innerText="₹ "+cash;
-document.getElementById("upiAmount").innerText="₹ "+upi;
-document.getElementById("cardAmount").innerText="₹ "+card;
-
-renderPaymentChart(cash,upi,card);
-renderTrendChart(docs);
-
+if(body.innerHTML===""){
+body.innerHTML=`<tr><td colspan="3" class="empty-state">No data found</td></tr>`;
 }
 
+totalAmount.innerText=formatCurrency(total);
+cashAmount.innerText=formatCurrency(cash);
+upiAmount.innerText=formatCurrency(upi);
+cardAmount.innerText=formatCurrency(card);
 
+renderPie(cash,upi,card);
+renderTrend(docs);
+}
 
-/* PIE CHART */
-
-function renderPaymentChart(cash,upi,card){
-
-const ctx=document.getElementById("paymentChart");
-
+function renderPie(c,u,ca){
 if(paymentChart) paymentChart.destroy();
 
-paymentChart=new Chart(ctx,{
+paymentChart=new Chart(paymentChartCanvas,{
 type:"doughnut",
 data:{
 labels:["Cash","UPI","Card"],
-datasets:[{
-data:[cash,upi,card],
-backgroundColor:["#28a745","#6f42c1","#fd7e14"]
-}]
+datasets:[{data:[c,u,ca]}]
 },
-options:{
-plugins:{legend:{position:"bottom"}}
-}
+options:{plugins:{legend:{position:"bottom"}}}
 });
-
 }
 
+const paymentChartCanvas=document.getElementById("paymentChart");
 
+function renderTrend(docs){
 
-/* TREND CHART */
+  let map = {};
 
-function renderTrendChart(docs){
+  docs.forEach(doc=>{
+    const d = doc.data();
 
-let dailyMap={};
+    if(d.feePaid && d.date){
+      let dt = d.date.toDate().toISOString().split("T")[0];
 
-docs.forEach(doc=>{
+      if(!map[dt]) map[dt] = 0;
 
-const d=doc.data();
+      map[dt] += parseFloat(d.fee || 0);
+    }
+  });
 
-if(d.feePaid){
+  const labels = Object.keys(map);
+  const values = Object.values(map);
 
-let date=d.date.toDate().toISOString().split("T")[0];
+  const ctx = document.getElementById("trendChart");
 
-if(!dailyMap[date]) dailyMap[date]=0;
+  if(trendChart) trendChart.destroy();
 
-dailyMap[date]+=parseFloat(d.fee||0);
+  // 🔥 HANDLE EMPTY DATA
+  if(labels.length === 0){
+    trendChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: ["No Data"],
+        datasets: [{
+          label: "Revenue",
+          data: [0],
+          borderColor: "#ccc",
+          backgroundColor: "rgba(200,200,200,0.2)",
+          fill: true
+        }]
+      }
+    });
+    return;
+  }
+
+  // ✅ NORMAL CHART
+  trendChart = new Chart(ctx,{
+    type:"line",
+    data:{
+      labels: labels,
+      datasets:[{
+        label: "Revenue",
+        data: values,
+        borderColor:"#0d6efd",
+        backgroundColor:"rgba(13,110,253,0.2)",
+        fill:true,
+        tension:0.3
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false}
+      },
+      scales:{
+        y:{
+          beginAtZero:true
+        }
+      }
+    }
+  });
 
 }
-
-});
-
-const labels=Object.keys(dailyMap);
-const values=Object.values(dailyMap);
-
-const ctx=document.getElementById("trendChart");
-
-if(trendChart) trendChart.destroy();
-
-trendChart=new Chart(ctx,{
-type:"line",
-data:{
-labels:labels,
-datasets:[{
-label:"Revenue",
-data:values,
-borderColor:"#007bff",
-backgroundColor:"rgba(0,123,255,0.2)",
-fill:true
-}]
-},
-options:{
-plugins:{legend:{display:false}}
-}
-});
-
-}
+const trendChartCanvas=document.getElementById("trendChart");
 
 </script>
 
