@@ -638,39 +638,84 @@ const card = document.createElement("div");
 card.className = "med-card";
 
 card.innerHTML = `
-<div class="med-row">
-<select class="form-select">
-<option>Tablet</option>
-<option>Syrup</option>
-<option>Cream</option>
-<option>Injection</option>
-</select>
-</div>
-
-<div class="med-row autocomplete">
-  <input class="form-control med-name" placeholder="Type medicine (do, eco, cal...)">
-  <div class="autocomplete-list"></div>
-</div>
-
-<div class="med-row">
-  <div class="input-group">
-    <input type="number" class="form-control duration" placeholder="5">
-    <span class="input-group-text">days</span>
+<!-- Row 1: Type, Medicine Name, Duration -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:12px;" class="med-row-1">
+  <!-- Type -->
+  <div>
+    <label style="font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Type</label>
+    <select class="form-select form-select-sm med-type" style="font-size:13px;">
+      <option>Tablet</option>
+      <option>Syrup</option>
+      <option>Cream</option>
+      <option>Injection</option>
+      <option>Powder</option>
+      <option>Oil</option>
+    </select>
+  </div>
+  
+  <!-- Medicine Name -->
+  <div class="autocomplete" style="grid-column:span 2;">
+    <label style="font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Medicine Name</label>
+    <input class="form-control form-control-sm med-name" placeholder="Type medicine name..." style="font-size:13px;">
+    <div class="autocomplete-list" style="font-size:12px;"></div>
+  </div>
+  
+  <!-- Duration -->
+  <div>
+    <label style="font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Duration</label>
+    <div class="input-group input-group-sm">
+      <input type="number" class="form-control med-duration" placeholder="5" min="1" style="font-size:13px;" />
+      <span class="input-group-text" style="font-size:11px;">days</span>
+    </div>
   </div>
 </div>
-<div class="med-checks">
-<label><input type="checkbox"> M</label>
-<label><input type="checkbox"> A</label>
-<label><input type="checkbox"> N</label>
+
+<!-- Row 2: Timing & Before Food (Same Row) -->
+<div style="display:grid;grid-template-columns:2fr 1.5fr;gap:12px;margin-bottom:12px;" class="med-row-2">
+  <!-- Timing (M A N) -->
+  <div>
+    <label style="font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Timing</label>
+    <div class="med-checks" style="display:flex;gap:12px;">
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" class="med-morning" style="cursor:pointer;" /> 
+        <span>Morning</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" class="med-afternoon" style="cursor:pointer;" /> 
+        <span>Afternoon</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;">
+        <input type="checkbox" class="med-night" style="cursor:pointer;" /> 
+        <span>Night</span>
+      </label>
+    </div>
+  </div>
+  
+  <!-- Before Food -->
+  <div>
+    <label style="font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Instructions</label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;padding:6px;">
+      <input type="checkbox" class="med-before-food" style="cursor:pointer;" /> 
+      <span style="white-space:nowrap;">Before Food</span>
+    </label>
+  </div>
 </div>
 
-<div class="med-checks">
-<label><input type="checkbox"> Before Food</label>
+<!-- Row 3: Remove Button -->
+<div style="text-align:right;">
+  <button class="btn btn-sm btn-outline-danger" onclick="this.closest('.med-card').remove()" style="font-size:12px;">
+    ✕ Remove Medicine
+  </button>
 </div>
 
-<div class="med-remove">
-<button class="btn btn-sm btn-danger" onclick="this.closest('.med-card').remove()">Remove</button>
-</div>
+<style>
+  @media (max-width: 576px) {
+    .med-row-1 { grid-template-columns: 1fr !important; }
+    .med-row-1 .autocomplete { grid-column: auto !important; }
+    .med-row-2 { grid-template-columns: 1fr !important; }
+    .med-checks { flex-direction: column !important; gap: 8px !important; }
+  }
+</style>
 `;
 
 document.getElementById("medContainer").appendChild(card);
@@ -761,21 +806,16 @@ e.preventDefault();
 const meds=[];
 document.querySelectorAll("#medContainer .med-card").forEach(card=>{
 
-const type = card.querySelector("select").value;
+const type = card.querySelector(".med-type").value;
+const name = card.querySelector(".med-name").value;
+const duration = card.querySelector(".med-duration").value || "";
 
-const inputs = card.querySelectorAll("input");
+const morning = card.querySelector(".med-morning").checked ? "1" : "0";
+const afternoon = card.querySelector(".med-afternoon").checked ? "1" : "0";
+const night = card.querySelector(".med-night").checked ? "1" : "0";
+const beforeFood = card.querySelector(".med-before-food").checked;
 
-const name = inputs[0].value;
-const duration = inputs[1].value;
-const checks = card.querySelectorAll(".med-checks input");
-
-const time = [
-checks[0].checked ? "1":"0",
-checks[1].checked ? "1":"0",
-checks[2].checked ? "1":"0"
-].join("-");
-
-const beforeFood = checks[3].checked;
+const time = [morning, afternoon, night].join("-");
 
 meds.push({
 type,
@@ -784,6 +824,8 @@ duration,
 time,
 beforeFood
 });
+
+console.log("Medicine captured:", {type, name, duration, time, beforeFood});
 });
 const data={
 
@@ -855,12 +897,25 @@ pFollow.textContent=followupDate.value;
 printMedicineList.innerHTML="";
 meds.forEach((m,i)=>{
 
+  const lang = document.getElementById("language").value;
+  let durationText = '';
+  
+  if(m.duration) {
+    if(lang === "mr") {
+      durationText = `${m.duration} दिवस`;
+    } else {
+      durationText = `${m.duration} ${m.duration > 1 ? 'days' : 'day'}`;
+    }
+  }
+  
+  const durationLabel = lang === "mr" ? "कालावधी" : "Duration";
+  
 printMedicineList.innerHTML += `
-<div style="margin-bottom:10px">
+<div style="margin-bottom:15px;">
 
 <b>${i+1}. ${translateType(m.type)} ${m.name}</b><br>
 
-${getDurationLabel()}: ${translateDuration(m.duration)}<br>
+${durationLabel}: <b>${durationText}</b><br>
 ${translateTiming(m.time, m.beforeFood)}
 
 </div>
