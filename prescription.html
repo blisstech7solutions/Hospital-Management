@@ -500,19 +500,41 @@ async function loadHospital(){
 }
 async function loadPreviousPrescription(){
 
-const snap = await db.collectionGroup("prescriptions")
-.where("mobile","==",mobile)
-.where("patientName","==",name)   // ✅ added filter
-.orderBy("createdAt","desc")
-.limit(1)
-.get();
+const appointmentSnap = await db.collection("hospitals")
+  .doc(hospitalId)
+  .collection("appointments")
+  .get();
 
-if(snap.empty){
-console.log("No previous prescription");
-return;
+const snapDocs = [];
+for (const appointmentDoc of appointmentSnap.docs) {
+  const presSnap = await db.collection("hospitals")
+    .doc(hospitalId)
+    .collection("appointments")
+    .doc(appointmentDoc.id)
+    .collection("prescriptions")
+    .where("mobile", "==", mobile)
+    .get();
+
+  presSnap.docs.forEach(doc => {
+    const data = doc.data();
+    if (data.patientName === name) {
+      snapDocs.push(doc);
+    }
+  });
 }
 
-const old = snap.docs[0].data();
+snapDocs.sort((a, b) => {
+  const aTs = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+  const bTs = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+  return bTs - aTs;
+});
+
+if(snapDocs.length === 0){
+  console.log("No previous prescription");
+  return;
+}
+
+const old = snapDocs[0].data();
 
 /* Fill fields */
 
@@ -846,6 +868,8 @@ patientName:name,
 mobile:mobile,
 age:age.value,
 gender:gender.value,
+hospitalId: hospitalId,
+appointmentId: appointmentId,
 
 createdAt:firebase.firestore.FieldValue.serverTimestamp()
 };

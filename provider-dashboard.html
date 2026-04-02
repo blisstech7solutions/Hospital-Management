@@ -657,6 +657,33 @@ let unsubscribeAppointments = null;
   }
 let dataTable;
 
+async function getPatientPrescriptions(mobile, name) {
+  const prescriptions = [];
+  const appointmentSnap = await db.collection("hospitals")
+    .doc(hospitalId)
+    .collection("appointments")
+    .get();
+
+  for (const appointmentDoc of appointmentSnap.docs) {
+    const presSnap = await db.collection("hospitals")
+      .doc(hospitalId)
+      .collection("appointments")
+      .doc(appointmentDoc.id)
+      .collection("prescriptions")
+      .where("mobile", "==", mobile)
+      .get();
+
+    presSnap.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.patientName === name) {
+        prescriptions.push(doc);
+      }
+    });
+  }
+
+  return prescriptions;
+}
+
 function initDataTable() {
   if ($.fn.DataTable.isDataTable('#appointmentTable')) {
     $('#appointmentTable').DataTable().destroy();
@@ -937,16 +964,6 @@ return;
   const cardRows = [];
 
   for (const d of filtered) {
-    let hasHistory = false;
-    try {
-      const histSnap = await db.collectionGroup("prescriptions").where("mobile", "==", d.mobile).where("patientName", "==", d.patientName).limit(1).get();
-      hasHistory = !histSnap.empty;
-      console.log("History check", d.patientName, d.mobile, "=>", hasHistory, "records:", histSnap.size);
-    } catch(e) {
-      console.error("Error checking history:", d.patientName, d.mobile, e);
-      hasHistory = false;
-    }
-
     let badgeColor = "secondary";
     if (d.status === "Pending") badgeColor = "warning";
     if (d.status === "Completed") badgeColor = "success";
@@ -981,7 +998,8 @@ return;
        <td>
   <div class="d-flex justify-content-center gap-1">
     <button class="btn btn-sm btn-success"
-      onclick="event.stopPropagation(); editAppointment('${d.id}')"title="Edit">✏️</button>
+      onclick="event.stopPropagation(); editAppointment('${d.id}');"
+      title="Edit">✏️</button>
 
     <button class="btn btn-sm btn-success"
       onclick="event.stopPropagation(); openPrescriptionPage(
@@ -1084,14 +1102,19 @@ async function showPatientHistory(mobile, name) {
 
   try {
 
-    const snap = await db.collectionGroup("prescriptions").where("mobile", "==", mobile).where("patientName", "==", name).orderBy("createdAt", "desc").get();
+    const snap = await getPatientPrescriptions(mobile, name);
+    snap.sort((a, b) => {
+      const aTs = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+      const bTs = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+      return bTs - aTs;
+    });
 
     const historyBody = document.getElementById("historyBody");
     const historyCards = document.getElementById("historyCards");
     historyBody.innerHTML = "";
     historyCards.innerHTML = "";
 
-    if (snap.empty) {
+    if (snap.length === 0) {
       historyBody.innerHTML = `
         <tr><td colspan="5" class="text-center text-muted py-4">No history found</td></tr>
       `;
@@ -1283,6 +1306,7 @@ editDocId = null;
       addAppointmentModal.hide();
       addAppointmentForm.reset();
       addAppointmentForm.classList.remove("was-validated");
+      filterAppointmentsByDate();
     } catch (err) {
       alert("Error saving appointment: " + err.message);
     }
@@ -1434,6 +1458,15 @@ function filterAppointmentsByDate() {
 <script src="/chat.js"></script>
 
 <script>
+const historyModalElement = document.getElementById('historyModal');
+
+document.getElementById('historyModal').addEventListener('hide.bs.modal', function () {
+  const active = document.activeElement;
+  if (this.contains(active)) {
+    active.blur();
+  }
+});
+
 // Ensure modal backdrops are removed properly on close
 document.getElementById('historyModal').addEventListener('hidden.bs.modal', function () {
   // Remove any leftover modal backdrops
